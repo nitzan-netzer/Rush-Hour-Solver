@@ -13,7 +13,6 @@ def main():
     Generate a board with all vehicles parked in the parking lot.
     """
     board = Board()
-    board.reset()
     board.add_vehicle(Car("RL", "X"), 0, 0)
     board.add_vehicle(Car("RL", "A"), 0, 2)
     board.add_vehicle(Car("RL", "B"), 0, 4)
@@ -33,10 +32,10 @@ def main():
 
     path_parking = "database/parking"
     os.makedirs(path_parking, exist_ok=True)
-    path_with_latter = os.path.join(path_parking, "board-with-latter.png")
-    path_without_latter = os.path.join(path_parking, "board-without-latter.png")
-    save_board_to_image(board, path_with_latter, draw_letters=True)
-    save_board_to_image(board, path_without_latter, draw_letters=False)
+    path_parking_with_latter = os.path.join(path_parking, "board-with-latter.png")
+    path_parking_without_latter = os.path.join(path_parking, "board-without-latter.png")
+    save_board_to_image(board, path_parking_with_latter, draw_letters=True)
+    save_board_to_image(board, path_parking_without_latter, draw_letters=False)
 
 
 if __name__ == "__main__":
