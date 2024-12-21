@@ -109,10 +109,8 @@ def card5():
 
 def main():
     original_path = "database/original/cards/"
-    frame_path = "database/original/frames/"
     video_path = "database/original/videos/"
     os.makedirs(original_path, exist_ok=True)
-    os.makedirs(frame_path, exist_ok=True)
     os.makedirs(video_path, exist_ok=True)
 
     cards = (card1, card2, card3, card4, card5)
@@ -122,11 +120,8 @@ def main():
         name = card.__name__
         card_path = original_path + name + ".png"
         card_video_path = video_path + name + "_solution.mp4"
-        card_frame_path = frame_path + name
         save_board_to_image(board, card_path, draw_letters=True)
-        save_board_to_video(
-            board, sol, card_frame_path, card_video_path, draw_letters=False
-        )
+        save_board_to_video(board, sol, card_video_path, draw_letters=False)
 
 
 if __name__ == "__main__":
