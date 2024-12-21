@@ -44,3 +44,13 @@ repos:
       - id: debug-statements
         name: "Detect Debugging Statements"
         description: "Warn if debug statements (like print, pdb) are in the code"
+
+  - repo: local
+    hooks:
+      - id: coverage-check
+        name: Coverage Check
+        entry: python scripts/coverage_check.py
+        language: system
+        types: [python]
+        always_run: true
+        verbose: true
