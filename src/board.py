@@ -6,6 +6,7 @@ The board manages the placement and movement of vehicles, ensuring they follow r
 import random
 
 import numpy as np
+
 from vehicles import RedCar
 
 
