@@ -16,8 +16,9 @@ def shuffle_colors():
     random.shuffle(truck_colors)
 
 
-def cards_generator(num_of_cards:int ,num_of_cars: int, num_of_trucks: int,
-                    num_of_step: int, threshold: int):
+def cards_generator(num_of_cards: int,num_of_cars: int,
+    num_of_trucks: int,num_of_step: int,threshold: int,
+):
     """
     Generate cards with random vehicles and random moves.
     The board is guaranteed to have a red car at in start position (2, 4-5).
@@ -27,7 +28,7 @@ def cards_generator(num_of_cards:int ,num_of_cars: int, num_of_trucks: int,
     board = Board()
     while count < num_of_cards:
         board.reset()
-        #shuffle_colors()
+        shuffle_colors()
 
         for i in range(num_of_trucks):
             direction = random.choice(["UD", "RL"])
@@ -46,11 +47,11 @@ def cards_generator(num_of_cards:int ,num_of_cars: int, num_of_trucks: int,
         difficulty = calculate_difficulty(board)
         if difficulty > threshold:
             count += 1
-            save_board_to_image(board, rf"database\board-{count}.png")
+            save_board_to_image(board, rf"database\easy\board-{count}.png")
 
 
 def main():
-    """"
+    """ "
     the main function to generate cards.
     """
     num_of_cards = 10
@@ -65,7 +66,7 @@ def main():
         num_of_trucks = 2
         num_of_step = 50
         threshold = 3
-    
+
     cards_generator(num_of_cards, num_of_cars, num_of_trucks, num_of_step, threshold)
 
 

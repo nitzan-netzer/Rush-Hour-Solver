@@ -6,14 +6,14 @@ Each class includes attributes for position, direction, and length,
 along with methods for handling movement and state.
 """
 
-from typing import List
 from abc import ABC
+from typing import List
 
 
 class Vehicle(ABC):
     """
     Represents a generic vehicle on the board.
-    
+
     Attributes:
         length (int): The number of squares the vehicle occupies.
         direction (str): Whether the vehicle is horizontal or vertical.
@@ -29,15 +29,14 @@ class Vehicle(ABC):
         self.row = row
         self.col = col
 
-
     def get_possible_moves(self, board) -> List[str]:
         """
         Determine possible move directions based on the vehicle's direction and the board's layout.
-        
+
         Args:
-            board: An object that provides an `empty_space(row, col)` method 
+            board: An object that provides an `empty_space(row, col)` method
                    returning True if the given position is free.
-        
+
         Returns:
             A list of strings representing possible move directions.
             For a horizontal vehicle: ['L', 'R']

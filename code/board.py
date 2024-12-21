@@ -6,7 +6,6 @@ The board manages the placement and movement of vehicles, ensuring they follow r
 import random
 
 import numpy as np
-
 from vehicles import RedCar
 
 
@@ -33,15 +32,14 @@ class Board:
         self.col = col
         self.reset()
 
-
-    def reset(self):
+    def reset(self, init_red_car=True):
         """
         Resets the board by removing all vehicles except the red car.
         """
         self.vehicles = []
         self.board = np.empty((self.row, self.col), dtype=str)
-        self.add_vehicle(RedCar(), 2, 4)
-
+        if init_red_car:
+            self.add_vehicle(RedCar(), 2, 4)
 
     def add_vehicle(self, vehicle, row: int, col: int):
         """
@@ -53,9 +51,9 @@ class Board:
             col (int): The starting column of the vehicle.
         """
         if vehicle.direction == "RL":
-            self.board[row, col:col + vehicle.length] = vehicle.symbol
+            self.board[row, col : col + vehicle.length] = vehicle.symbol
         else:
-            self.board[row:row + vehicle.length, col] = vehicle.symbol
+            self.board[row : row + vehicle.length, col] = vehicle.symbol
         vehicle.row = row
         vehicle.col = col
         self.vehicles.append(vehicle)
@@ -116,12 +114,12 @@ class Board:
         if vehicle.direction == "RL":
             if col + vehicle.length > self.col:
                 return False
-            if np.any(self.board[row, col:col + vehicle.length] != ""):
+            if np.any(self.board[row, col : col + vehicle.length] != ""):
                 return False
         else:
             if row + vehicle.length > self.row:
                 return False
-            if np.any(self.board[row:row + vehicle.length, col] != ""):
+            if np.any(self.board[row : row + vehicle.length, col] != ""):
                 return False
 
         return True
@@ -194,7 +192,7 @@ class Board:
         Returns:
             bool: True if the red car is at the winning position, False otherwise.
         """
-        return self.board[2,5] != "X" and self.board[2,5] != ""
+        return self.board[2, 5] != "X" and self.board[2, 5] != ""
 
     def __str__(self):
         """
@@ -204,3 +202,18 @@ class Board:
             str: The board as a string.
         """
         return str(self.board)
+
+    def get_vehicle_by_symbol(self, symbol: str):
+        """
+        Returns the vehicle with the specified symbol.
+
+        Args:
+            symbol (str): The symbol of the vehicle.
+
+        Returns:
+            Vehicle: The vehicle with the specified symbol, or None if not found.
+        """
+        for vehicle in self.vehicles:
+            if vehicle.symbol == symbol:
+                return vehicle
+        return None

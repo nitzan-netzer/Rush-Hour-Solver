@@ -1,5 +1,5 @@
 """
 This file contains the colors of the cars and trucks.
 """
-car_colors = ["B","G","O","C","M","W"]
-truck_colors = ["y","p"]
+car_colors = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K"]
+truck_colors = ["O", "P", "Q", "R"]
