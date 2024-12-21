@@ -1,9 +1,9 @@
+import os
 import random
 
 from board import Board
-from board_to_image import save_board_to_image
+from board_to_image import car_colors, save_board_to_image, truck_colors
 from calculate_difficulty import calculate_difficulty
-from colors import car_colors, truck_colors
 from vehicles import Car, Truck
 
 
@@ -64,11 +64,13 @@ def main():
         num_of_trucks = 1
         num_of_step = 10
         threshold = 1
+        os.makedirs("database/easy", exist_ok=True)
     else:
         num_of_cars = 6
         num_of_trucks = 2
         num_of_step = 50
         threshold = 3
+        os.makedirs("database/hard", exist_ok=True)
 
     cards_generator(num_of_cards, num_of_cars, num_of_trucks, num_of_step, threshold)
 

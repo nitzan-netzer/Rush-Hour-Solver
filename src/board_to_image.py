@@ -4,6 +4,27 @@ import numpy as np
 from moviepy.editor import ImageSequenceClip
 from PIL import Image, ImageDraw, ImageFont
 
+car_colors = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K"]
+truck_colors = ["O", "P", "Q", "R"]
+symbol_to_color = {
+    "X": (255, 0, 0),  # Red
+    "A": (144, 238, 144),  # Light Green
+    "B": (255, 165, 0),  # Orange
+    "C": (0, 255, 255),  # Cyan
+    "D": (255, 182, 193),  # Pink
+    "E": (0, 0, 139),  # Dark Blue
+    "F": (0, 128, 0),  # Green
+    "G": (50, 50, 50),  # Light Black (Grayish)
+    "H": (245, 245, 220),  # Beige
+    "I": (255, 255, 128),  # Light Yellow
+    "J": (139, 69, 19),  # Saddle brown
+    "K": (0, 255, 0),  # Green
+    "O": (255, 255, 0),  # Yellow
+    "P": (128, 0, 128),  # Purple
+    "Q": (0, 0, 255),  # Blue
+    "R": (0, 128, 128),  # Teal
+}
+
 
 def save_board_to_image(
     board, filename="board.png", scale=50, draw_grid=True, draw_letters=False
@@ -18,24 +39,6 @@ def save_board_to_image(
         draw_grid: Whether to draw a grid over the board.
     """
     # Map each symbol to a custom RGB color
-    symbol_to_color = {
-        "X": (255, 0, 0),  # Red
-        "A": (144, 238, 144),  # Light Green
-        "B": (255, 165, 0),  # Orange
-        "C": (0, 255, 255),  # Cyan
-        "D": (255, 182, 193),  # Pink
-        "E": (0, 0, 139),  # Dark Blue
-        "F": (0, 128, 0),  # Green
-        "G": (50, 50, 50),  # Light Black (Grayish)
-        "H": (245, 245, 220),  # Beige
-        "I": (255, 255, 128),  # Light Yellow
-        "J": (139, 69, 19),  # Saddle brown
-        "K": (0, 255, 0),  # Green
-        "O": (255, 255, 0),  # Yellow
-        "P": (128, 0, 128),  # Purple
-        "Q": (0, 0, 255),  # Blue
-        "R": (0, 128, 128),  # Teal
-    }
 
     rows, cols = board.board.shape
     rgb_data = np.zeros((rows, cols, 3), dtype=np.uint8)
