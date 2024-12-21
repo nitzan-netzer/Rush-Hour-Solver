@@ -1,3 +1,6 @@
+"""
+Generate cards with random vehicles and random moves.
+"""
 import os
 import random
 

@@ -1,3 +1,6 @@
+"""
+This module provides functions to generate images and videos from board states.
+"""
 import numpy as np
 from moviepy.editor import ImageSequenceClip
 from PIL import Image, ImageDraw, ImageFont
@@ -22,6 +25,8 @@ letter_to_color = {
     "Q": (0, 0, 255),  # Blue
     "R": (0, 128, 128),  # Teal
 }
+GRAY = (128, 128, 128)
+WHITE = (255, 255, 255)
 
 
 def generate_board_image(board, scale: int = 50, draw_letters: bool = False) -> Image:
@@ -38,11 +43,10 @@ def generate_board_image(board, scale: int = 50, draw_letters: bool = False) -> 
     """
     rows, cols = board.board.shape
     rgb_data = np.zeros((rows, cols, 3), dtype=np.uint8)
-    gray_default = (128, 128, 128)
     for r in range(rows):
         for c in range(cols):
             letter = board.board[r, c]
-            rgb_data[r, c] = letter_to_color.get(letter, gray_default)
+            rgb_data[r, c] = letter_to_color.get(letter, GRAY)
 
     img = Image.fromarray(rgb_data, "RGB")
 
@@ -73,9 +77,8 @@ def generate_board_image(board, scale: int = 50, draw_letters: bool = False) -> 
     # Highlight the edge to the right of (2, 5) with white color
     edge_row = 2 * scale  # Top of row 2 in pixels
     edge_col = (5 + 1) * scale  # Right edge of column 5 in pixels
-    white = (255, 255, 255)
     cords = [(edge_col, edge_row), (edge_col, edge_row + scale)]
-    draw.line(cords, fill=white, width=5)
+    draw.line(cords, fill=WHITE, width=5)
 
     return img
 
