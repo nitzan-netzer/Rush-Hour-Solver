@@ -52,9 +52,9 @@ class Board:
             col (int): The starting column of the vehicle.
         """
         if vehicle.direction == "RL":
-            self.board[row, col : col + vehicle.length] = vehicle.symbol
+            self.board[row, col : col + vehicle.length] = vehicle.letter
         else:
-            self.board[row : row + vehicle.length, col] = vehicle.symbol
+            self.board[row : row + vehicle.length, col] = vehicle.letter
         vehicle.row = row
         vehicle.col = col
         self.vehicles.append(vehicle)
@@ -142,24 +142,24 @@ class Board:
             if move == "L":
                 vehicle.col -= 1
                 self.board[vehicle.row, vehicle.col + vehicle.length] = ""
-                self.board[vehicle.row, vehicle.col] = vehicle.symbol
+                self.board[vehicle.row, vehicle.col] = vehicle.letter
             elif move == "R":
                 vehicle.col += 1
                 self.board[vehicle.row, vehicle.col - 1] = ""
                 self.board[
                     vehicle.row, vehicle.col + vehicle.length - 1
-                ] = vehicle.symbol
+                ] = vehicle.letter
         else:
             if move == "U":
                 vehicle.row -= 1
                 self.board[vehicle.row + vehicle.length, vehicle.col] = ""
-                self.board[vehicle.row, vehicle.col] = vehicle.symbol
+                self.board[vehicle.row, vehicle.col] = vehicle.letter
             elif move == "D":
                 vehicle.row += 1
                 self.board[vehicle.row - 1, vehicle.col] = ""
                 self.board[
                     vehicle.row + vehicle.length - 1, vehicle.col
-                ] = vehicle.symbol
+                ] = vehicle.letter
         return True
 
     def random_move(self):
@@ -208,17 +208,17 @@ class Board:
         """
         return str(self.board)
 
-    def get_vehicle_by_symbol(self, symbol: str):
+    def get_vehicle_by_letter(self, letter: str):
         """
-        Returns the vehicle with the specified symbol.
+        Returns the vehicle with the specified letter.
 
         Args:
-            symbol (str): The symbol of the vehicle.
+            letter (str): The letter of the vehicle.
 
         Returns:
-            Vehicle: The vehicle with the specified symbol, or None if not found.
+            Vehicle: The vehicle with the specified letter, or None if not found.
         """
         for vehicle in self.vehicles:
-            if vehicle.symbol == symbol:
+            if vehicle.letter == letter:
                 return vehicle
         return None

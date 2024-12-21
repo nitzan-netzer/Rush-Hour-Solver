@@ -19,7 +19,7 @@ def calculate_difficulty(board):
 
     # Find the RedCar
     for vehicle in board.vehicles:
-        if vehicle.symbol == "X":  # Assuming "X" represents the RedCar
+        if vehicle.letter == "X":  # Assuming "X" represents the RedCar
             red_car = vehicle
             break
 
@@ -46,7 +46,7 @@ def _calculate_difficulty_recursive(board, vehicle, visited=None):
         visited = set()
 
     # Add the current vehicle to the visited set to avoid revisiting
-    visited.add(vehicle.symbol)
+    visited.add(vehicle.letter)
 
     difficulty = 0
 
@@ -56,11 +56,11 @@ def _calculate_difficulty_recursive(board, vehicle, visited=None):
             vehicle.col + vehicle.length, board.col
         ):  # Check cells to the right
             if board.board[vehicle.row, col] != "":
-                blocking_symbol = board.board[vehicle.row, col]
+                blocking_letter = board.board[vehicle.row, col]
                 blocking_vehicle = next(
-                    v for v in board.vehicles if v.symbol == blocking_symbol
+                    v for v in board.vehicles if v.letter == blocking_letter
                 )
-                if blocking_vehicle.symbol not in visited:
+                if blocking_vehicle.letter not in visited:
                     difficulty += 1  # Add a point for this blocking vehicle
                     difficulty += _calculate_difficulty_recursive(
                         board, blocking_vehicle, visited
@@ -69,11 +69,11 @@ def _calculate_difficulty_recursive(board, vehicle, visited=None):
     elif vehicle.direction == "UD":  # Up-Down
         for row in range(vehicle.row + vehicle.length, board.row):  # Check cells below
             if board.board[row, vehicle.col] != "":
-                blocking_symbol = board.board[row, vehicle.col]
+                blocking_letter = board.board[row, vehicle.col]
                 blocking_vehicle = next(
-                    v for v in board.vehicles if v.symbol == blocking_symbol
+                    v for v in board.vehicles if v.letter == blocking_letter
                 )
-                if blocking_vehicle.symbol not in visited:
+                if blocking_vehicle.letter not in visited:
                     difficulty += 1  # Add a point for this blocking vehicle
                     difficulty += _calculate_difficulty_recursive(
                         board, blocking_vehicle, visited

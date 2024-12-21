@@ -107,7 +107,7 @@ def card5():
     return board
 
 
-if __name__ == "__main__":
+def main():
     original_path = "database/original/cards/"
     frame_path = "database/original/frames/"
     video_path = "database/original/videos/"
@@ -127,3 +127,7 @@ if __name__ == "__main__":
         save_board_to_video(
             board, sol, card_frame_path, card_video_path, draw_letters=False
         )
+
+
+if __name__ == "__main__":
+    main()

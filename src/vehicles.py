@@ -17,15 +17,15 @@ class Vehicle(ABC):
     Attributes:
         length (int): The number of squares the vehicle occupies.
         direction (str): Whether the vehicle is horizontal or vertical.
-        symbol (str): A single-character symbol representing the vehicle on the board.
+        letter (str): A single-character letter representing the vehicle on the board.
         row (int): The topmost row position of the vehicle.
         col (int): The leftmost column position of the vehicle.
     """
 
-    def __init__(self, length: int, direction: str, symbol: str, row: int, col: int):
+    def __init__(self, length: int, direction: str, letter: str, row: int, col: int):
         self.length = length
         self.direction = direction
-        self.symbol = symbol
+        self.letter = letter
         self.row = row
         self.col = col
 
@@ -68,8 +68,8 @@ class Car(Vehicle):
     A Car is a type of Vehicle with length 2.
     """
 
-    def __init__(self, direction: str, symbol: str, row: int = -1, col: int = -1):
-        super().__init__(2, direction, symbol, row, col)
+    def __init__(self, direction: str, letter: str, row: int = -1, col: int = -1):
+        super().__init__(2, direction, letter, row, col)
 
 
 class RedCar(Car):
@@ -87,5 +87,5 @@ class Truck(Vehicle):
     A Truck is a type of Vehicle with length 3.
     """
 
-    def __init__(self, direction: str, symbol: str, row: int = -1, col: int = -1):
-        super().__init__(3, direction, symbol, row, col)
+    def __init__(self, direction: str, letter: str, row: int = -1, col: int = -1):
+        super().__init__(3, direction, letter, row, col)

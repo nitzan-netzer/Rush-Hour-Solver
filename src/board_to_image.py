@@ -6,7 +6,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 car_colors = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K"]
 truck_colors = ["O", "P", "Q", "R"]
-symbol_to_color = {
+letter_to_color = {
     "X": (255, 0, 0),  # Red
     "A": (144, 238, 144),  # Light Green
     "B": (255, 165, 0),  # Orange
@@ -30,7 +30,7 @@ def save_board_to_image(
     board, filename="board.png", scale=50, draw_grid=True, draw_letters=False
 ):
     """
-    Save a board with symbols to an image file with optional grid and letters.
+    Save a board with letters to an image file with optional grid and letters.
 
     Args:
         board: An object with `board` as a numpy 2D array.
@@ -38,16 +38,16 @@ def save_board_to_image(
         scale: Size of each tile in pixels.
         draw_grid: Whether to draw a grid over the board.
     """
-    # Map each symbol to a custom RGB color
+    # Map each letter to a custom RGB color
 
     rows, cols = board.board.shape
     rgb_data = np.zeros((rows, cols, 3), dtype=np.uint8)
 
     for r in range(rows):
         for c in range(cols):
-            symbol = board.board[r, c]
-            rgb_data[r, c] = symbol_to_color.get(
-                symbol, (128, 128, 128)
+            letter = board.board[r, c]
+            rgb_data[r, c] = letter_to_color.get(
+                letter, (128, 128, 128)
             )  # Gray for unknown
 
     img = Image.fromarray(rgb_data, "RGB")
@@ -80,10 +80,10 @@ def save_board_to_image(
         # Draw the letters in the center of each tile
         for r in range(rows):
             for c in range(cols):
-                symbol = board.board[r, c]
+                letter = board.board[r, c]
                 x = c * scale + scale // 2
                 y = r * scale + scale // 2
-                draw.text((x, y), symbol, fill=(0, 0, 0), font=font, anchor="mm")
+                draw.text((x, y), letter, fill=(0, 0, 0), font=font, anchor="mm")
 
     img.save(filename)
     # print(f"Board saved to {filename}")
@@ -101,8 +101,8 @@ def save_board_to_video(board, sol, frame_folder, video_name, draw_letters=False
     frame_count = 1
     # Apply each move in sol1
     for move in sol:
-        symbol = move[0]
-        car = board.get_vehicle_by_symbol(symbol)
+        letter = move[0]
+        car = board.get_vehicle_by_letter(letter)
         direction = move[1]
         times = move[2]
         for _ in range(int(times)):
