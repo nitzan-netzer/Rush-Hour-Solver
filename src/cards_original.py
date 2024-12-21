@@ -1,3 +1,6 @@
+"""
+Generate the original cards and their solutions.
+"""
 import os
 
 from board import Board
@@ -108,6 +111,10 @@ def card5():
 
 
 def main():
+    """
+    Generate the original cards and their solutions.
+    """
+
     original_path = "database/original/cards/"
     video_path = "database/original/videos/"
     os.makedirs(original_path, exist_ok=True)
