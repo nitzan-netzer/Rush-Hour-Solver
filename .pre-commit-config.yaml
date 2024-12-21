@@ -54,3 +54,13 @@ repos:
 #        types: [python]
 #        always_run: true
 #        verbose: true
+
+#  - repo: local
+#    hooks:
+#      - id: pylnit-check
+#        name: pylint Check
+#        entry: python scripts/pylint_check.py
+#        language: system
+#        types: [python]
+#        always_run: true
+#        verbose: true
