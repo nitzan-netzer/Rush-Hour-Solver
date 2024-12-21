@@ -4,7 +4,7 @@ Generate cards with random vehicles and random moves.
 import os
 import random
 
-from board import Board
+from board_random import BoardRandom
 from board_to_image import car_colors, save_board_to_image, truck_colors
 from calculate_difficulty import calculate_difficulty
 from vehicles import Car, Truck
@@ -31,7 +31,7 @@ def cards_generator(
     before random moves, it guarantee board is can be solved.
     """
     count = 0
-    board = Board()
+    board = BoardRandom()
     while count < num_of_cards:
         board.reset()
         shuffle_colors()
