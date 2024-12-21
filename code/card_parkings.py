@@ -25,8 +25,11 @@ def main():
     board.add_vehicle(Truck("RL", "P"), 4, 3)
     board.add_vehicle(Truck("RL", "Q"), 5, 0)
     board.add_vehicle(Truck("RL", "R"), 5, 3)
-    save_board_to_image(board, "database/board-parking.png")
-    save_board_to_image(board, "database/board-parking_without_latter.png", draw_letters=False)
+
+    path_board_parking_with_latter = "database/board-parking-with-latter.png"
+    path_board_parking_without_latter = "database/board-parking-without-latter.png"
+    save_board_to_image(board, path_board_parking_with_latter, draw_letters=True)
+    save_board_to_image(board, path_board_parking_without_latter, draw_letters=False)
 
 
 if __name__ == "__main__":

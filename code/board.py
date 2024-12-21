@@ -145,7 +145,9 @@ class Board:
             elif move == "R":
                 vehicle.col += 1
                 self.board[vehicle.row, vehicle.col - 1] = ""
-                self.board[vehicle.row, vehicle.col + vehicle.length - 1] = vehicle.symbol
+                self.board[
+                    vehicle.row, vehicle.col + vehicle.length - 1
+                ] = vehicle.symbol
         else:
             if move == "U":
                 vehicle.row -= 1
@@ -154,7 +156,9 @@ class Board:
             elif move == "D":
                 vehicle.row += 1
                 self.board[vehicle.row - 1, vehicle.col] = ""
-                self.board[vehicle.row + vehicle.length - 1, vehicle.col] = vehicle.symbol
+                self.board[
+                    vehicle.row + vehicle.length - 1, vehicle.col
+                ] = vehicle.symbol
         return True
 
     def random_move(self):

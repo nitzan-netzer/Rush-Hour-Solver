@@ -1,4 +1,3 @@
-import os
 import random
 
 from board import Board
@@ -16,8 +15,12 @@ def shuffle_colors():
     random.shuffle(truck_colors)
 
 
-def cards_generator(num_of_cards: int,num_of_cars: int,
-    num_of_trucks: int,num_of_step: int,threshold: int,
+def cards_generator(
+    num_of_cards: int,
+    num_of_cars: int,
+    num_of_trucks: int,
+    num_of_step: int,
+    threshold: int,
 ):
     """
     Generate cards with random vehicles and random moves.

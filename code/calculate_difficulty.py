@@ -2,6 +2,8 @@
 This module contains the function to calculate the difficulty of a stage
 based on the number of mechanisms
 """
+
+
 def calculate_difficulty(board):
     """
     Calculates the difficulty of the stage based on the number of mechanisms (vehicles)
@@ -50,22 +52,32 @@ def _calculate_difficulty_recursive(board, vehicle, visited=None):
 
     # Determine the cells in front of the vehicle based on its direction
     if vehicle.direction == "RL":  # Right-Left
-        for col in range(vehicle.col + vehicle.length, board.col):  # Check cells to the right
+        for col in range(
+            vehicle.col + vehicle.length, board.col
+        ):  # Check cells to the right
             if board.board[vehicle.row, col] != "":
                 blocking_symbol = board.board[vehicle.row, col]
-                blocking_vehicle = next(v for v in board.vehicles if v.symbol == blocking_symbol)
+                blocking_vehicle = next(
+                    v for v in board.vehicles if v.symbol == blocking_symbol
+                )
                 if blocking_vehicle.symbol not in visited:
                     difficulty += 1  # Add a point for this blocking vehicle
-                    difficulty += _calculate_difficulty_recursive(board, blocking_vehicle, visited)
+                    difficulty += _calculate_difficulty_recursive(
+                        board, blocking_vehicle, visited
+                    )
                 break  # Stop after the first blocking vehicle
     elif vehicle.direction == "UD":  # Up-Down
         for row in range(vehicle.row + vehicle.length, board.row):  # Check cells below
             if board.board[row, vehicle.col] != "":
                 blocking_symbol = board.board[row, vehicle.col]
-                blocking_vehicle = next(v for v in board.vehicles if v.symbol == blocking_symbol)
+                blocking_vehicle = next(
+                    v for v in board.vehicles if v.symbol == blocking_symbol
+                )
                 if blocking_vehicle.symbol not in visited:
                     difficulty += 1  # Add a point for this blocking vehicle
-                    difficulty += _calculate_difficulty_recursive(board, blocking_vehicle, visited)
+                    difficulty += _calculate_difficulty_recursive(
+                        board, blocking_vehicle, visited
+                    )
                 break  # Stop after the first blocking vehicle
 
     return difficulty

@@ -71,7 +71,7 @@ def save_board_to_image(
         # Load default font
         try:
             font = ImageFont.truetype("arial.ttf", scale // 2)
-        except:
+        except OSError:
             font = ImageFont.load_default()
 
         # Draw the letters in the center of each tile
