@@ -3,6 +3,7 @@ Generate cards with random vehicles and random moves.
 """
 import os
 import random
+from copy import deepcopy
 from datetime import datetime
 
 from tqdm import tqdm
@@ -61,7 +62,7 @@ def cards_generator(
             if not failed:
                 difficulty = calculate_difficulty(board)
                 if difficulty > threshold:
-                    boards.append(board)
+                    boards.append(deepcopy(board))
                     pbar.update(1)
 
     return boards
