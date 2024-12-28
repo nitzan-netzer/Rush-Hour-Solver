@@ -23,11 +23,32 @@ class Vehicle(ABC):
     """
 
     def __init__(self, length: int, direction: str, letter: str, row: int, col: int):
-        self.length = length
-        self.direction = direction
-        self.letter = letter
+        self._length = length
+        self._direction = direction
+        self._letter = letter
         self.row = row
         self.col = col
+
+    @property
+    def length(self) -> int:
+        return self._length
+
+    @property
+    def direction(self) -> str:
+        return self._direction
+
+    @property
+    def letter(self) -> str:
+        return self._letter
+
+    def change_direction(self):
+        """
+        Change the vehicle's direction from horizontal to vertical or vice versa.
+        """
+        if self.direction == "RL":
+            self._direction = "UD"
+        else:
+            self._direction = "RL"
 
     def get_possible_moves(self, board) -> List[str]:
         """

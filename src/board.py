@@ -56,7 +56,7 @@ class Board:
         vehicle.col = col
         self.vehicles.append(vehicle)
 
-    def check_add_vehicle(self, vehicle, row: int, col: int):
+    def check_add_vehicle(self, vehicle, row: int, col: int, uniqueness=False):
         """
         Checks if a vehicle can be added at the specified position, ensuring no conflicts
         with other vehicles or board boundaries.
@@ -69,16 +69,16 @@ class Board:
         Returns:
             bool: True if the vehicle can be placed, False otherwise.
         """
-        # Direction-based uniqueness check
-        if vehicle.direction == "RL":
-            for v in self.vehicles:
-                if v.direction == "RL" and v.row == row:
-                    return False
-        else:
-            for v in self.vehicles:
-                if v.direction == "UD" and v.col == col:
-                    return False
-
+        if uniqueness:
+            # Direction-based uniqueness check
+            if vehicle.direction == "RL":
+                for v in self.vehicles:
+                    if v.direction == "RL" and v.row == row:
+                        return False
+            else:
+                for v in self.vehicles:
+                    if v.direction == "UD" and v.col == col:
+                        return False
         # Check boundaries and collisions
         if vehicle.direction == "RL":
             if col + vehicle.length > self.col:

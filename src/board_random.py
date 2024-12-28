@@ -26,10 +26,7 @@ class BoardRandom(Board):
             col = random.choice(range(self.col))
             count += 1
             if count == 100:
-                if vehicle.direction == "RL":
-                    vehicle.direction = "UD"
-                else:
-                    vehicle.direction = "RL"
+                vehicle.change_direction()
             if count > 200:
                 print("Cannot add car")
                 return False
@@ -39,12 +36,13 @@ class BoardRandom(Board):
     def random_move(self):
         """
         Randomly selects a vehicle and moves it in a valid direction.
+        returns True if a move was made, False otherwise.
         """
-        flag = True
-        while flag:
-            vehicle = random.choice(self.vehicles)
+        random.shuffle(self.vehicles)
+        for vehicle in self.vehicles:
             moves = vehicle.get_possible_moves(self)
             if moves:
                 move = random.choice(moves)
                 self.move_vehicle(vehicle, move)
-                flag = False
+                return True
+        return False
