@@ -110,3 +110,27 @@ class Truck(Vehicle):
 
     def __init__(self, direction: str, letter: str, row: int = -1, col: int = -1):
         super().__init__(3, direction, letter, row, col)
+
+
+def create_vehicle(vehicle_data: dict) -> Vehicle:
+    """
+    Create a vehicle object based on the provided data.
+    Args:
+        vehicle_data (dict): A dictionary containing vehicle data.
+        The dictionary must contain a 'type' key with a value of 'Car', 'Truck', or 'RedCar'.
+        For 'Car' and 'Truck' types, the dictionary must also contain 'direction' and 'letter' keys.
+
+    Returns:
+      Vehicle: A vehicle object based on the provided data.
+
+    Raises:
+        ValueError: If the vehicle type is unknown.
+    """
+    if vehicle_data["type"] == "RedCar":
+        return RedCar()
+    elif vehicle_data["type"] == "Car":
+        return Car(vehicle_data["direction"], vehicle_data["letter"])
+    elif vehicle_data["type"] == "Truck":
+        return Truck(vehicle_data["direction"], vehicle_data["letter"])
+    else:
+        raise ValueError(f"Unknown vehicle type: {vehicle_data['type']}")

@@ -2,9 +2,11 @@
 This module defines the `Board` class, which represents the game board for a rush hour puzzle game.
 The board manages the placement and movement of vehicles, ensuring they follow rules and constraints.
 """
+import json
+
 import numpy as np
 
-from vehicles import RedCar
+from vehicles import RedCar, create_vehicle
 
 
 class Board:
@@ -18,7 +20,7 @@ class Board:
         board (numpy.ndarray): A 2D array representing the board state.
     """
 
-    def __init__(self, row: int = 6, col: int = 6):
+    def __init__(self, row: int = 6, col: int = 6, init_red_car=True):
         """
         Initializes a new game board with a default size of 6x6 and adds the red car.
 
@@ -28,7 +30,7 @@ class Board:
         """
         self.row = row
         self.col = col
-        self.reset()
+        self.reset(init_red_car)
 
     def reset(self, init_red_car=True):
         """
@@ -154,15 +156,6 @@ class Board:
         """
         return self.board[2, 5] != "X" and self.board[2, 5] != ""
 
-    def __str__(self):
-        """
-        Returns a string representation of the board.
-
-        Returns:
-            str: The board as a string.
-        """
-        return str(self.board)
-
     def get_vehicle_by_letter(self, letter: str):
         """
         Returns the vehicle with the specified letter.
@@ -177,3 +170,120 @@ class Board:
             if vehicle.letter == letter:
                 return vehicle
         return None
+
+    def __str__(self):
+        """
+        Saves the current board state as a string.
+
+        Returns:
+            str: The board state as a string.
+        """
+        str = ""
+        for row in self.board:
+            for cell in row:
+                str += cell if cell != "" else "."
+            str += "\n"
+        return str
+
+    def to_dict(self) -> dict:
+        """
+        Returns the current board state as a dictionary.
+
+        Returns:
+            dict: The board state as a dictionary.
+        """
+        json_board: dict = {"row": self.row, "col": self.col, "vehicles": []}
+        for vehicle in self.vehicles:
+            json_board["vehicles"].append(
+                {
+                    "type": vehicle.__class__.__name__,
+                    "letter": vehicle.letter,
+                    "row": vehicle.row,
+                    "col": vehicle.col,
+                    "direction": vehicle.direction,
+                }
+            )
+
+        return json_board
+
+    @staticmethod
+    def from_dict(json_board: dict):
+        """
+        Loads a board state from a dictionary.
+
+        Args:
+            json_board (dict): The dictionary representing the board state.
+        """
+        row = json_board["row"]
+        col = json_board["col"]
+        board = Board(row, col, init_red_car=False)
+        for vehicle_data in json_board["vehicles"]:
+            vehicle = create_vehicle(vehicle_data)
+            board.add_vehicle(vehicle, vehicle_data["row"], vehicle_data["col"])
+
+        return board
+
+    def save(self, filename: str):
+        """
+        Saves the current board state to a file.
+
+        Args:
+            filename (str): The name of the file to save to.
+        """
+        json_board = self.to_dict()
+        with open(filename, "w") as file:
+            json.dump(json_board, file)
+
+    @staticmethod
+    def load(filename: str):
+        """
+        Loads a board state from a file.
+
+        Args:
+            filename (str): The name of the file to load from.
+        """
+        with open(filename, "r") as file:
+            json_board = json.load(file)
+
+        return Board.from_dict(json_board)
+
+    @staticmethod
+    def save_multiple_boards(boards, filename: str):
+        """
+        Saves multiple board states to a file.
+
+        Args:
+            boards (list): A list of board states to save.
+            filename (str): The name of the file to save to.
+        """
+        json_boards = [board.to_dict() for board in boards]
+        with open(filename, "w") as file:
+            json.dump(json_boards, file)
+
+    @staticmethod
+    def load_multiple_boards(filename: str):
+        """
+        Loads multiple board states from a file.
+
+        Args:
+            filename (str): The name of the file to load from.
+        """
+        with open(filename, "r") as file:
+            json_boards = json.load(file)
+
+        return [Board.from_dict(json_board) for json_board in json_boards]
+
+    def __eq__(self, other):
+        """
+        Compares two board states for equality.
+
+        Args:
+            other (Board): The other board state to compare.
+
+        Returns:
+            bool: True if the two board states are equal, False otherwise.
+        """
+        board_equal = np.array_equal(self.board, other.board)
+        vehicles_len_equal = len(self.vehicles) == len(other.vehicles)
+
+        return board_equal and vehicles_len_equal
