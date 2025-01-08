@@ -287,3 +287,34 @@ class Board:
         vehicles_len_equal = len(self.vehicles) == len(other.vehicles)
 
         return board_equal and vehicles_len_equal
+
+    def get_all_moves(self):
+        """
+        Get all possible moves for all vehicles on the board.
+
+        Returns:
+            dict: A dictionary mapping vehicle letters to possible moves.
+        """
+        moves = []
+        for vehicle in self.vehicles:
+            if vehicle.direction == "RL":
+                moves.append((vehicle.letter, "L"))
+                moves.append((vehicle.letter, "R"))
+            else:
+                moves.append((vehicle.letter, "U"))
+                moves.append((vehicle.letter, "D"))
+        return tuple(moves)
+
+    def get_board_flatten(self):
+        """
+        Get the board state as a flattened numpy array.
+
+        Returns:
+            numpy.ndarray: A flattened numpy array representing the board state.
+        """
+        arr = np.zeros((self.row * self.col), dtype=int)
+        for i, row in enumerate(self.board):
+            for j, cell in enumerate(row):
+                if cell != "":
+                    arr[i * self.col + j] = ord(cell)
+        return arr
