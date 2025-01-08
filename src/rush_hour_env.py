@@ -12,13 +12,13 @@ class RushHourEnv(Env):
     def reset(self):
         """
         Initialize the board state.
-        The red car (XX) is always in row 3 and has a length of 2.
+        The red car (X) is always in row 3 and has a length of 2.
         """
-        # לוח התחלתי לדוגמה
+        # Example board
         self.state = np.array([
             ["A", "A", "", "", "", ""],
-            ["", "", "", "", "", ""],
-            ["", "X", "X", "", "", ""],  
+            ["", "", "", "", "D", ""],
+            ["", "X", "X", "", "D", ""],  
             ["", "B", "B", "B", "", ""],
             ["", "", "", "", "C", "C"],
             ["", "", "", "", "", ""],
