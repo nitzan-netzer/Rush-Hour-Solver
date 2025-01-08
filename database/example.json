@@ -1,0 +1,34 @@
+{
+    "row": 6,
+    "col": 6,
+    "vehicles": [
+        {
+            "type": "RedCar",
+            "letter": "X",
+            "row": 2,
+            "col": 2,
+            "direction": "RL"
+        },
+        {
+            "type": "Truck",
+            "letter": "P",
+            "row": 3,
+            "col": 3,
+            "direction": "UD"
+        },
+        {
+            "type": "Car",
+            "letter": "A",
+            "row": 5,
+            "col": 4,
+            "direction": "RL"
+        },
+        {
+            "type": "Car",
+            "letter": "F",
+            "row": 2,
+            "col": 5,
+            "direction": "UD"
+        }
+    ]
+}
