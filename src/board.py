@@ -156,6 +156,9 @@ class Board:
         """
         return self.board[2, 5] != "X" and self.board[2, 5] != ""
 
+    def game_over(self) -> bool:
+        return self.board[2, 5] == "X"
+
     def get_vehicle_by_letter(self, letter: str):
         """
         Returns the vehicle with the specified letter.

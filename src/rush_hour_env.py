@@ -1,12 +1,17 @@
 import gymnasium as gym
-from gymnasium import Env
-from gymnasium.spaces import Discrete
 import numpy as np
+from gymnasium import Env
+from gymnasium.spaces import MultiDiscrete
+
+from board import Board
+
 
 class RushHourEnv(Env):
-    def __init__(self):
+    def __init__(self, num_of_vehicle: int):
         # Define action and observation space
-        self.action_space = Discrete(10)  # Example: 10 possible moves
+        self.action_space = MultiDiscrete(
+            [num_of_vehicle, 4]
+        )  # Example: 10 possible moves
         self.state = None  # Initialize state variable
 
     def reset(self):
@@ -15,15 +20,8 @@ class RushHourEnv(Env):
         The red car (X) is always in row 3 and has a length of 2.
         """
         # Example board
-        self.state = np.array([
-            ["A", "A", "", "", "", ""],
-            ["", "", "", "", "D", ""],
-            ["", "X", "X", "", "D", ""],  
-            ["", "B", "B", "B", "", ""],
-            ["", "", "", "", "C", "C"],
-            ["", "", "", "", "", ""],
-        ], dtype=object)
-        
+        self.board = Board.load("database/example.json")
+        self.state = self.board.board
         return self.state, self._get_info()
 
     def step(self, action):
@@ -31,10 +29,16 @@ class RushHourEnv(Env):
         Process an action to update the state.
         For now, this is a placeholder. Implement game logic here.
         """
-        # Example reward and termination condition
-        reward = -1
-        done = False  # Update this logic based on game rules
-        info = self._get_info()
+        reward = -1  # Example reward structure
+        vehicle_str, move_str = parse_action(action)
+        vehicle = self.board.get_vehicle_by_letter(vehicle_str)
+        is_move = self.board.move_vehicle(vehicle, move_str)
+        if is_move:
+            print("moved")
+        else:
+            print("not moved")
+        self.state = self.board.board
+        done = self.board.game_over()
         return self.state, reward, done, info
 
     def _get_info(self):
@@ -54,19 +58,54 @@ class RushHourEnv(Env):
             print(" ".join(cell if cell else "." for cell in row))
         print()
 
+
+def parse_action(action):
+    vehicle, move = action
+    match int(move):
+        case 0:
+            move_str = "U"  # Up
+        case 1:
+            move_str = "D"  # Down
+        case 2:
+            move_str = "L"  # Left
+        case 3:
+            move_str = "R"  # Right
+
+    match int(vehicle):
+        case 0:
+            vehicle_str = "X"
+        case 1:
+            vehicle_str = "A"
+        case 2:
+            vehicle_str = "B"
+        case 3:
+            vehicle_str = "O"
+
+    return vehicle_str, move_str
+
+
 # Example usage
 if __name__ == "__main__":
-    env = RushHourEnv()
-
+    num_of_cars = 3
+    num_of_trucks = 1
+    num_of_vehicle = num_of_cars + num_of_trucks
+    env = RushHourEnv(num_of_vehicle)
     # Reset environment
     state, info = env.reset()
     print("Initial State:")
     env.render()
     print("Info after reset:", info)
-
-    # Perform a step (placeholder logic)
-    state, reward, done, info = env.step(0)
-    print("State after step:")
+    done = False
+    total_reward = 0
+    while not done:
+        # Perform a step (placeholder logic)
+        action = env.action_space.sample()
+        state, reward, done, info = env.step(action)
+        # print("State after step:")
+        env.render()
+        # print("Reward:", reward)
+        # print("Info after step:", info)
+        total_reward += reward
+    print("Total Reward:", total_reward)
+    print("Final State:")
     env.render()
-    print("Reward:", reward)
-    print("Info after step:", info)
