@@ -1,44 +1,58 @@
 import gymnasium as gym
 from gymnasium import Env
-from gymnasium.spaces import Discrete, Box
+from gymnasium.spaces import Discrete
 import numpy as np
 
 class RushHourEnv(Env):
     def __init__(self):
         # Define action and observation space
         self.action_space = Discrete(10)  # Example: 10 possible moves
-        self.observation_space = Box(low=0, high=1, shape=(10,), dtype=np.float32)  # Example state space
-        
         self.state = None  # Initialize state variable
 
     def reset(self):
-        # Initialize the state
-        self.state = np.zeros(10)  # Set the initial state
-        return self.state, self._get_info()  # Return state and info dictionary
+        """
+        Initialize the board state.
+        The red car (XX) is always in row 3 and has a length of 2.
+        """
+        # לוח התחלתי לדוגמה
+        self.state = np.array([
+            ["A", "A", "", "", "", ""],
+            ["", "", "", "", "", ""],
+            ["", "X", "X", "", "", ""],  
+            ["", "B", "B", "B", "", ""],
+            ["", "", "", "", "C", "C"],
+            ["", "", "", "", "", ""],
+        ], dtype=object)
+        
+        return self.state, self._get_info()
 
     def step(self, action):
-        # Update state based on action
-        reward = -1  # Example reward structure
-        done = False  # Example: check if game is over
-        info = self._get_info()  # Fetch additional information
+        """
+        Process an action to update the state.
+        For now, this is a placeholder. Implement game logic here.
+        """
+        # Example reward and termination condition
+        reward = -1
+        done = False  # Update this logic based on game rules
+        info = self._get_info()
         return self.state, reward, done, info
 
     def _get_info(self):
-        # Return additional info about the environment
+        """
+        Provide additional information about the board.
+        """
+        non_empty_cells = np.count_nonzero(self.state != "")
         return {
-            "state_sum": np.sum(self.state),  # Example: sum of state values
-            "non_zero_count": np.count_nonzero(self.state),  # Example: count of non-zero elements
+            "non_empty_cells": non_empty_cells,  # Count of non-empty elements
         }
 
     def render(self):
-        # Visualize the environment (optional)
-        print(self.state)
-
-# Registering the environment
-gym.register(
-    id="RushHour-v0",
-    entry_point="RushHourEnv", 
-)
+        """
+        Visualize the current state of the board.
+        """
+        for row in self.state:
+            print(" ".join(cell if cell else "." for cell in row))
+        print()
 
 # Example usage
 if __name__ == "__main__":
@@ -46,11 +60,13 @@ if __name__ == "__main__":
 
     # Reset environment
     state, info = env.reset()
-    print("Initial State:", state)
+    print("Initial State:")
+    env.render()
     print("Info after reset:", info)
 
-    # Perform a step
+    # Perform a step (placeholder logic)
     state, reward, done, info = env.step(0)
-    print("State after step:", state)
+    print("State after step:")
+    env.render()
     print("Reward:", reward)
     print("Info after step:", info)
