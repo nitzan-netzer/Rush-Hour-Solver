@@ -1,6 +1,6 @@
 import gymnasium as gym
 import numpy as np
-from gymnasium import Env
+from gymnasium import Env,spaces
 from gymnasium.spaces import MultiDiscrete
 
 from board import Board
@@ -14,6 +14,7 @@ class RushHourEnv(Env):
         self.action_space = MultiDiscrete(
             [num_of_vehicle, 4]
         )  # Example: 10 possible moves
+        self.observation_space = spaces.Box(0, num_of_vehicle, [36,], dtype=np.int16)
         self.state = None  # Initialize state variable
     def reset(self):
         """
@@ -85,6 +86,30 @@ def parse_action(action):
             vehicle_str = "O"
 
     return vehicle_str, move_str
+gym.register(
+    id="RushHourEnv-v0",
+    entry_point=RushHourEnv,
+    kwargs={"num_of_vehicle": 4},  
+)
+
+if __name__ == "_main_":
+    env = gym.make("RushHourEnv-v0")
+    state, info = env.reset()
+    env.render()
+    state, info = env.reset()
+    print("Initial State:")
+    env.render()
+    print("Info after reset:", info)
+    done = False
+    total_reward = 0
+    while not done:
+        action = env.action_space.sample()
+        state, reward, done, info = env.step(action)
+        total_reward += reward
+
+    print("Total Reward:", total_reward)
+    print("Final State:")
+    env.render()
 
 
 # Example usage
