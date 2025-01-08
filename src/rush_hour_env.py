@@ -4,7 +4,9 @@ from gymnasium import Env
 from gymnasium.spaces import MultiDiscrete
 
 from board import Board
+from random import choice
 
+boards = Board.load_multiple_boards(r"database/example-1000.json")
 
 class RushHourEnv(Env):
     def __init__(self, num_of_vehicle: int):
@@ -13,14 +15,13 @@ class RushHourEnv(Env):
             [num_of_vehicle, 4]
         )  # Example: 10 possible moves
         self.state = None  # Initialize state variable
-
     def reset(self):
         """
         Initialize the board state.
         The red car (X) is always in row 3 and has a length of 2.
         """
         # Example board
-        self.board = Board.load("database/example.json")
+        self.board = choice(boards)
         self.state = self.board.board
         return self.state, self._get_info()
 
@@ -33,10 +34,12 @@ class RushHourEnv(Env):
         vehicle_str, move_str = parse_action(action)
         vehicle = self.board.get_vehicle_by_letter(vehicle_str)
         is_move = self.board.move_vehicle(vehicle, move_str)
+        """
         if is_move:
             print("moved")
         else:
             print("not moved")
+        """
         self.state = self.board.board
         done = self.board.game_over()
         return self.state, reward, done, info
@@ -102,7 +105,7 @@ if __name__ == "__main__":
         action = env.action_space.sample()
         state, reward, done, info = env.step(action)
         # print("State after step:")
-        env.render()
+        # env.render()
         # print("Reward:", reward)
         # print("Info after step:", info)
         total_reward += reward
