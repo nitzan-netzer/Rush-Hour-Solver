@@ -1,0 +1,66 @@
+# pre-commit configuration file
+# See https://pre-commit.com for more information
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0  # Use the latest stable version
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-merge-conflict
+
+  - repo: https://github.com/psf/black
+    rev: 23.11.0  # Use the latest stable version
+    hooks:
+      - id: black
+        language_version: python3.12  # Adjust according to your Python version
+
+  - repo: https://github.com/pycqa/flake8
+    rev: 6.1.0  # Use the latest stable version
+    hooks:
+      - id: flake8
+        args: [--max-line-length=105, "--extend-ignore=E203"]  # Adjust to match Black's default line length
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.5.1  # Use the latest stable version
+    hooks:
+      - id: mypy
+        additional_dependencies: ['types-requests']  # Example: Add any type stubs required by your project
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: check-added-large-files
+        args: ['--maxkb=500']  # Warn if files larger than 500KB are added
+
+  - repo: https://github.com/PyCQA/isort
+    rev: 5.12.0  # Use the latest stable version
+    hooks:
+      - id: isort
+        args: ['--profile', 'black']  # Ensure compatibility with Black
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: debug-statements
+        name: "Detect Debugging Statements"
+        description: "Warn if debug statements (like print, pdb) are in the code"
+
+#  - repo: local
+#    hooks:
+#      - id: coverage-check
+#        name: Coverage Check
+#        entry: python scripts/coverage_check.py
+#        language: system
+#        types: [python]
+#        always_run: true
+#        verbose: true
+
+#  - repo: local
+#    hooks:
+#      - id: pylnit-check
+#        name: pylint Check
+#        entry: python scripts/pylint_check.py
+#        language: system
+#        types: [python]
+#        always_run: true
+#        verbose: true
