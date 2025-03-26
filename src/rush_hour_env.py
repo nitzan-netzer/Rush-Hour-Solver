@@ -1,4 +1,3 @@
-import gymnasium as gym
 from gymnasium import Env, spaces
 import numpy as np
 from random import choice

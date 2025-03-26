@@ -32,5 +32,5 @@ for _ in range(100):
     obs, reward, done, _, info = env.step(action)
     env.render()
     if done:
-        print("🚗 Red car escaped!")
+        print("🚗 Great! Red car escaped!")
         break
