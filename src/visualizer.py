@@ -1,4 +1,4 @@
-# Visualize agent while training
+# Visualize agent while testing
 
 import pygame
 import time
