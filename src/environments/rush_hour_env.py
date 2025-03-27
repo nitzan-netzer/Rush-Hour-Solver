@@ -32,8 +32,11 @@ class RushHourEnv(Env):
         self.board = None
         self.get_reward = rewards
        
-    def reset(self, seed=None):
-        self.board =  deepcopy(choice(self.boards))
+    def reset(self,board=None,seed=None):
+        if board is None:
+            self.board =  deepcopy(choice(self.boards))
+        else:
+            self.board = deepcopy(board)
         self.state = self.board.get_board_flatten().astype(np.uint8)
         self.num_steps = 0
         return self.state, self._get_info()
