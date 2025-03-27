@@ -7,7 +7,7 @@ from environments.board import Board
 from environments.rewards import basic_reward
 
 from sklearn.model_selection import train_test_split
-
+from copy import deepcopy
 
 class RushHourEnv(Env):
     train_boards, test_boards = train_test_split(
@@ -33,7 +33,7 @@ class RushHourEnv(Env):
         self.get_reward = rewards
        
     def reset(self, seed=None):
-        self.board = choice(self.boards)
+        self.board =  deepcopy(choice(self.boards))
         self.state = self.board.get_board_flatten().astype(np.uint8)
         self.num_steps = 0
         return self.state, self._get_info()

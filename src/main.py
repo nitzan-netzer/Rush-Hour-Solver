@@ -18,7 +18,6 @@ VIDEO_DIR = Path("videos/")  # Directory to store videos
 VIDEO_PATH = VIDEO_DIR / "rush_hour_demo.mp4"  # Path to save the video
 # Symlink or copy for the latest log
 LATEST_LOG_FILE = "logs/rush_hour/run_latest.csv"
-TEST_EPISODES = 50
 NUM_VEHICLES = 4
 
 
@@ -56,14 +55,14 @@ def train_model(enable_early_stopping=True):
 
 
 # === Step 2: Evaluate the Model ===
-def run_model_evaluation(model_path, test_episodes=TEST_EPISODES):
+def run_model_evaluation(model_path):
     """Evaluate the trained model on test boards."""
     print("\n📊 Evaluating model on test boards...")
     test_env = RushHourEnv(num_of_vehicle=NUM_VEHICLES, train=False)
     model = PPO.load(str(model_path), env=test_env)
 
     # Use the evaluate_model function from RLmodel
-    evaluate_model(model,test_env,test_episodes)
+    evaluate_model(model,test_env)
     print("✅ Model evaluation completed.")
 
 
@@ -99,7 +98,7 @@ if __name__ == "__main__":
     VIDEO_DIR.mkdir(parents=True, exist_ok=True)
 
     # Step 1: Train the model and get the model path
-    model_path = train_model(enable_early_stopping=True)
+    model_path = train_model(enable_early_stopping=False)
     print("✅ Step 1: Model training completed.")
 
     # Step 2: Evaluate the model

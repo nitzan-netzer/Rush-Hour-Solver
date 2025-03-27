@@ -1,8 +1,9 @@
 
-def evaluate_model(model,env, episodes=50):
+def evaluate_model(model,env, episodes=None):
     """Evaluate the trained model on test boards."""
     solved, total_steps, total_rewards = 0, 0, 0
-
+    if episodes is None:
+        episodes = len(env.boards)
     for i in range(episodes):
         obs, _ = env.reset()
         episode_reward = 0

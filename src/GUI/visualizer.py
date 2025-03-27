@@ -92,7 +92,7 @@ def run_visualizer(model_path,record=False, output_video="video\rush_hour_soluti
             frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
             out.write(frame)
 
-        time.sleep(0.1)
+        time.sleep(0.2)
 
         if done:
             print("✅ Escaped!")

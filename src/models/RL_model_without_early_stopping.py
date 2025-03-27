@@ -23,10 +23,9 @@ def train_and_save_model_without(model_path="models/ppo_rush_hour_model_es.zip",
 
     # === Train the model (no early stopping) ===
     callback = RushHourCSVLogger(log_path=log_file)
-    model.learn(total_timesteps=30_000, callback=callback)
+    model.learn(total_timesteps=50_000, callback=callback)
 
     # === Save the model ===
-    model_path = "models_zip/ppo_rush_hour_model"
     model.save(model_path)
     print(f"💾 Model saved to: {model_path}")
 
