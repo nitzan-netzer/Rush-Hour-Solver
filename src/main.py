@@ -5,13 +5,14 @@ from pathlib import Path
 from models.RLmodel import train_and_save_model
 from models.RL_model_without_early_stopping import train_and_save_model_without
 from environments.rush_hour_env import RushHourEnv
+from environments.evaluate import evaluate_model
 from logs_utils.analyze_logs import analyze_logs
 from GUI.visualizer import run_visualizer  # ✅ Correct import
 from stable_baselines3 import PPO
 
 # === Config ===
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"  # Suppress TensorFlow logs
-MODEL_DIR = Path("models/")  # Directory to store models
+MODEL_DIR = Path("models_zip/")  # Directory to store models
 LOG_DIR = Path("logs/rush_hour/")  # Directory to store logs
 VIDEO_DIR = Path("videos/")  # Directory to store videos
 VIDEO_PATH = VIDEO_DIR / "rush_hour_demo.mp4"  # Path to save the video
@@ -62,7 +63,7 @@ def run_model_evaluation(model_path, test_episodes=TEST_EPISODES):
     model = PPO.load(str(model_path), env=test_env)
 
     # Use the evaluate_model function from RLmodel
-    RushHourEnv.evaluate_model(model,test_env,test_episodes)
+    evaluate_model(model,test_env,test_episodes)
     print("✅ Model evaluation completed.")
 
 
@@ -86,7 +87,7 @@ def visualize_and_save(model_path, video_path):
     print("\n🎥 Generating and saving visualization...")
 
     # Run visualizer with recording enabled
-    run_visualizer(record=True, output_video=str(video_path))
+    run_visualizer(model_path,record=True, output_video=str(video_path))
     print(f"✅ Video saved at: {video_path}")
 
 
@@ -98,7 +99,7 @@ if __name__ == "__main__":
     VIDEO_DIR.mkdir(parents=True, exist_ok=True)
 
     # Step 1: Train the model and get the model path
-    model_path = train_model(enable_early_stopping=False)
+    model_path = train_model(enable_early_stopping=True)
     print("✅ Step 1: Model training completed.")
 
     # Step 2: Evaluate the model

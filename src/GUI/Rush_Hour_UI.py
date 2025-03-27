@@ -88,7 +88,7 @@ def main():
 
     font = pygame.font.SysFont(FONT_NAME, 18)
     big_font = pygame.font.SysFont(FONT_NAME, 28)
-    model = PPO.load("models\ppo_rush_hour_model_es")
+    model = PPO.load("models_zip\ppo_rush_hour_model_es")
     thumbnails = generate_thumbnails()
 
     # Prepare level button rects

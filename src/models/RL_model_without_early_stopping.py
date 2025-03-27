@@ -1,8 +1,8 @@
 import setup_path # NOQA
 
 from pathlib import Path
-import time
 from environments.rush_hour_env import RushHourEnv
+from environments.evaluate import evaluate_model
 from stable_baselines3 import PPO
 from stable_baselines3.common.env_checker import check_env
 from logs_utils.custom_logger import RushHourCSVLogger  # for episode logging
@@ -26,7 +26,7 @@ def train_and_save_model_without(model_path="models/ppo_rush_hour_model_es.zip",
     model.learn(total_timesteps=30_000, callback=callback)
 
     # === Save the model ===
-    model_path = "models/ppo_rush_hour_model"
+    model_path = "models_zip/ppo_rush_hour_model"
     model.save(model_path)
     print(f"💾 Model saved to: {model_path}")
 
@@ -37,7 +37,7 @@ def train_and_save_model_without(model_path="models/ppo_rush_hour_model_es.zip",
 
     # === Evaluate ===
     test_episodes = 50
-    RushHourEnv.evaluate_model(model,test_env,test_episodes)
+    evaluate_model(model,test_env,test_episodes)
 
 if __name__ == "__main__":
     train_and_save_model_without()

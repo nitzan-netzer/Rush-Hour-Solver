@@ -2,13 +2,14 @@ import setup_path # NOQA
 from pathlib import Path
 
 from environments.rush_hour_env import RushHourEnv
+from environments.evaluate import evaluate_model
 from stable_baselines3 import PPO
 from stable_baselines3.common.env_checker import check_env
 from logs_utils.custom_logger import RushHourCSVLogger
 from models.early_stopping import EarlyStoppingSuccessRateCallback
 
 
-def train_and_save_model(model_path="models/ppo_rush_hour_model_es.zip", log_file="logs/rush_hour/run_latest.csv"):
+def train_and_save_model(model_path="models_zip/ppo_rush_hour_model_es.zip", log_file="logs/rush_hour/run_latest.csv"):
     """Train and save the PPO model with logging and early stopping."""
 
     # === Setup logging ===
@@ -44,7 +45,7 @@ def train_and_save_model(model_path="models/ppo_rush_hour_model_es.zip", log_fil
     model = PPO.load(model_path, env=test_env)
 
     # === Run evaluation ===
-    RushHourEnv.evaluate_model(model,test_env,episodes=50)
+    evaluate_model(model,test_env,episodes=50)
 
 if __name__ == "__main__":
     train_and_save_model()

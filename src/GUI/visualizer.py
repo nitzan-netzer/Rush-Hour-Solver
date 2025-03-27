@@ -5,6 +5,7 @@ import numpy as np
 import cv2
 
 from environments.rush_hour_env import RushHourEnv
+from environments.evaluate import evaluate_model
 from stable_baselines3 import PPO
 
 # Settings
@@ -45,14 +46,14 @@ def draw_board(screen, board, font):
     pygame.display.flip()
 
 
-def run_visualizer(record=False, output_video="video\rush_hour_solution.mp4"):
+def run_visualizer(model_path,record=False, output_video="video\rush_hour_solution.mp4"):
     pygame.init()
     screen = pygame.display.set_mode((WINDOW_SIZE, WINDOW_SIZE))
     pygame.display.set_caption("Rush Hour - Agent Demo")
     font = pygame.font.SysFont(None, 36)
 
-    test_env = RushHourEnv(num_of_vehicle=4, train=True)
-    model = PPO.load("models/ppo_rush_hour_model_es", env=test_env)
+    test_env = RushHourEnv(num_of_vehicle=4, train=False)
+    model = PPO.load(model_path, env=test_env)
 
     obs, _ = test_env.reset()
     draw_board(screen, test_env.board, font)
@@ -108,7 +109,7 @@ def run_visualizer(record=False, output_video="video\rush_hour_solution.mp4"):
         print(f"✅ Video saved to {output_video}")
 
     # === Automated test loop ===
-    RushHourEnv.evaluate_model(model,test_env,episodes=50)
+    evaluate_model(model,test_env,episodes=50)
 
 if __name__ == "__main__":
-    run_visualizer(record=True)
+    run_visualizer(model_path="models_zip/ppo_rush_hour.zip",record=True)
