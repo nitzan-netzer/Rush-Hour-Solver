@@ -1,11 +1,12 @@
 """
 Generate the original cards and their solutions.
 """
+import setup_path # NOQA
 import os
 
-from board import Board
-from board_to_image import save_board_to_image, save_board_to_video
-from vehicles import Car, Truck
+from environments.board import Board
+from environments.board_to_image import save_board_to_image, save_board_to_video
+from environments.vehicles import Car, Truck
 
 # fmt: off
 sol1 = ["CL3", "OD3", "AR1", "PU1", "BU1", "RL2", "QD2", "XR5"]

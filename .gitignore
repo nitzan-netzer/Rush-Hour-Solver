@@ -2,3 +2,6 @@
 __pycache__
 database
 .coverage
+logs
+models_zip
+videos
