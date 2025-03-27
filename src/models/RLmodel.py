@@ -1,6 +1,6 @@
 from pathlib import Path
 import time
-from environments.rush_hour_env import RushHourEnv, test_boards
+from environments.rush_hour_env import RushHourEnv
 from stable_baselines3 import PPO
 from stable_baselines3.common.env_checker import check_env
 from logs_utils.custom_logger import RushHourCSVLogger
@@ -39,35 +39,8 @@ def train_and_save_model(model_path="models/ppo_rush_hour_model_es.zip", log_fil
 
     # === Load model for test evaluation ===
     print("\n🚀 Evaluating on test boards...")
-    test_env = RushHourEnv(num_of_vehicle=4, boards=test_boards)
+    test_env = RushHourEnv(num_of_vehicle=4, train=False)
     model = PPO.load(model_path, env=test_env)
 
     # === Run evaluation ===
-    evaluate_model(model, test_env, test_episodes=50)
-
-
-def evaluate_model(model, env, test_episodes=50):
-    """Evaluate the trained model on test boards."""
-    solved, total_steps, total_rewards = 0, 0, 0
-
-    for i in range(test_episodes):
-        obs, _ = env.reset()
-        episode_reward = 0
-        for step in range(100):
-            action, _ = model.predict(obs)
-            obs, reward, done, _, info = env.step(action)
-            episode_reward += reward
-            if done:
-                solved += 1
-                total_steps += step + 1
-                break
-        total_rewards += episode_reward
-
-    print("\n📊 Test Evaluation Results:")
-    print(f"✅ Solved {solved}/{test_episodes}")
-    print(f"🏆 Success rate: {solved / test_episodes * 100:.2f}%")
-    print(f"📈 Avg reward: {total_rewards / test_episodes:.2f}")
-    if solved:
-        print(f"⏱️ Avg steps to solve: {total_steps / solved:.2f}")
-    else:
-        print("⚠️ No puzzles solved in the test set.")
+    RushHourEnv.evaluate_model(model,test_env,episodes=50)

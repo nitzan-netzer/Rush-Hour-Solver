@@ -2,8 +2,8 @@ import os
 import time
 import shutil
 from pathlib import Path
-from models.RLmodel import train_and_save_model, evaluate_model
-from environments.rush_hour_env import RushHourEnv, test_boards
+from models.RLmodel import train_and_save_model
+from environments.rush_hour_env import RushHourEnv
 from logs_utils.analyze_logs import analyze_logs
 from GUI.visualizer import run_visualizer  # ✅ Correct import
 from stable_baselines3 import PPO
@@ -55,11 +55,11 @@ def train_model():
 def run_model_evaluation(model_path, test_episodes=TEST_EPISODES):
     """Evaluate the trained model on test boards."""
     print("\n📊 Evaluating model on test boards...")
-    test_env = RushHourEnv(num_of_vehicle=NUM_VEHICLES, boards=test_boards)
+    test_env = RushHourEnv(num_of_vehicle=NUM_VEHICLES, train=False)
     model = PPO.load(str(model_path), env=test_env)
 
     # Use the evaluate_model function from RLmodel
-    evaluate_model(model, test_env, test_episodes)
+    RushHourEnv.evaluate_model(model,test_env,test_episodes)
     print("✅ Model evaluation completed.")
 
 

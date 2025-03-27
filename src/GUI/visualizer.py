@@ -108,19 +108,8 @@ def run_visualizer(record=False, output_video="rush_hour_solution.mp4"):
 
     # === Automated test loop ===
     solved = 0
-    test_env = RushHourEnv(num_of_vehicle=4)
-
-    for i in range(50):
-        obs, _ = test_env.reset()
-        for step in range(100):
-            action, _ = model.predict(obs)
-            obs, reward, done, _, _ = test_env.step(action)
-            if done:
-                solved += 1
-                break
-
-    print(f"✅ Solved {solved}/50 boards")
-
+    test_env = RushHourEnv(num_of_vehicle=4, train=False)
+    RushHourEnv.evaluate_model(model,test_env,episodes=50)
 
 if __name__ == "__main__":
     run_visualizer(record=True)

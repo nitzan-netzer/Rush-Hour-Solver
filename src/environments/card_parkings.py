@@ -5,7 +5,7 @@ import os
 
 from environments.board import Board
 from environments.board_to_image import save_board_to_image
-from vehicles import Car, Truck
+from environments.vehicles import Car, Truck
 
 
 def main():

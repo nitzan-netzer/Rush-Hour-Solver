@@ -33,30 +33,5 @@ test_env = RushHourEnv(num_of_vehicle=4, boards=test_boards)
 model = PPO.load(model_path, env=test_env)
 
 # === Evaluate ===
-solved = 0
-total_rewards = 0
-total_steps = 0
 test_episodes = 50
-
-for i in range(test_episodes):
-    obs, _ = test_env.reset()
-    episode_reward = 0
-    for step in range(100):  # max steps
-        action, _ = model.predict(obs)
-        obs, reward, done, _, info = test_env.step(action)
-        episode_reward += reward
-        if done:
-            solved += 1
-            total_steps += step + 1
-            break
-    total_rewards += episode_reward
-
-# === Print results ===
-print("\n📊 Test Evaluation Results:")
-print(f"✅ Solved {solved}/{test_episodes}")
-print(f"🏆 Success rate: {solved / test_episodes * 100:.2f}%")
-print(f"📈 Avg reward: {total_rewards / test_episodes:.2f}")
-if solved > 0:
-    print(f"⏱️ Avg steps to solve: {total_steps / solved:.2f}")
-else:
-    print("⚠️ No puzzles solved in test set.")
+RushHourEnv.evaluate_model(model,test_env,test_episodes)
