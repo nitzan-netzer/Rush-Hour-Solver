@@ -2,6 +2,8 @@
 This module defines the `Board` class, which represents the game board for a rush hour puzzle game.
 The board manages the placement and movement of vehicles, ensuring they follow rules and constraints.
 """
+import setup_path # NOQA
+
 import json
 
 import numpy as np

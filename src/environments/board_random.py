@@ -1,3 +1,5 @@
+import setup_path # NOQA
+
 import random
 
 from environments.board import Board

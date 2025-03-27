@@ -1,9 +1,11 @@
+import setup_path # NOQA
+
 from gymnasium import Env, spaces
 import numpy as np
 from random import choice
 from environments.board import Board
 from environments.rewards import basic_reward
-# 🚀 CHANGED: Add train/test split
+
 from sklearn.model_selection import train_test_split
 
 

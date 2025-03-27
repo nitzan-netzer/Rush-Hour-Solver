@@ -1,6 +1,7 @@
 """
 Generate the original cards and their solutions.
 """
+import setup_path # NOQA
 import os
 
 from environments.board import Board

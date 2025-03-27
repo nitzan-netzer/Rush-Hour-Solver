@@ -1,6 +1,8 @@
 """
 Generate cards with random vehicles and random moves.
 """
+import setup_path # NOQA
+
 import os
 import random
 from copy import deepcopy

@@ -1,3 +1,4 @@
+import setup_path # NOQA
 import pygame
 import time
 import numpy as np
@@ -44,7 +45,7 @@ def draw_board(screen, board, font):
     pygame.display.flip()
 
 
-def run_visualizer(record=False, output_video="rush_hour_solution.mp4"):
+def run_visualizer(record=False, output_video="video\rush_hour_solution.mp4"):
     pygame.init()
     screen = pygame.display.set_mode((WINDOW_SIZE, WINDOW_SIZE))
     pygame.display.set_caption("Rush Hour - Agent Demo")

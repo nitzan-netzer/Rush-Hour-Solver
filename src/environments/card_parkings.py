@@ -1,6 +1,8 @@
 """
 Generate a board with all vehicles parked in the parking lot.
 """
+import setup_path # NOQA
+
 import os
 
 from environments.board import Board

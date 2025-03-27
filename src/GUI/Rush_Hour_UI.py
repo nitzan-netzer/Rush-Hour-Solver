@@ -1,4 +1,5 @@
 # Creating UI as described in the documentation of the project desing using pygame
+import setup_path # NOQA
 
 import pygame
 import time
@@ -39,7 +40,7 @@ def generate_thumbnails():
 
 
 def solve_board(screen, model, board):
-    env = RushHourEnv(num_of_vehicle=4, boards=[board])
+    env = RushHourEnv(num_of_vehicle=4)
     obs, _ = env.reset()
 
     draw_board(screen, env.board)
@@ -87,7 +88,7 @@ def main():
 
     font = pygame.font.SysFont(FONT_NAME, 18)
     big_font = pygame.font.SysFont(FONT_NAME, 28)
-    model = PPO.load("ppo_rush_hour_model_es")
+    model = PPO.load("models\ppo_rush_hour_model_es")
     thumbnails = generate_thumbnails()
 
     # Prepare level button rects
