@@ -51,11 +51,11 @@ def run_visualizer(record=False, output_video="video\rush_hour_solution.mp4"):
     pygame.display.set_caption("Rush Hour - Agent Demo")
     font = pygame.font.SysFont(None, 36)
 
-    env = RushHourEnv(num_of_vehicle=4)
-    model = PPO.load("models/ppo_rush_hour_model_es", env=env)
+    test_env = RushHourEnv(num_of_vehicle=4, train=True)
+    model = PPO.load("models/ppo_rush_hour_model_es", env=test_env)
 
-    obs, _ = env.reset()
-    draw_board(screen, env.board, font)
+    obs, _ = test_env.reset()
+    draw_board(screen, test_env.board, font)
     time.sleep(1)
 
     out = None
@@ -78,12 +78,12 @@ def run_visualizer(record=False, output_video="video\rush_hour_solution.mp4"):
                 return
 
         action, _ = model.predict(obs)
-        obs, reward, done, _, _ = env.step(action)
+        obs, reward, done, _, _ = test_env.step(action)
 
-        vehicle_str, move_str = env.parse_action(action)
+        vehicle_str, move_str = test_env.parse_action(action)
         print(f"Step {i}: {vehicle_str} → {move_str}, reward: {reward}")
 
-        draw_board(screen, env.board, font)
+        draw_board(screen, test_env.board, font)
         if record:
             surface = pygame.display.get_surface()
             frame = pygame.surfarray.array3d(surface)
@@ -91,7 +91,7 @@ def run_visualizer(record=False, output_video="video\rush_hour_solution.mp4"):
             frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
             out.write(frame)
 
-        time.sleep(0.3)
+        time.sleep(0.1)
 
         if done:
             print("✅ Escaped!")
@@ -108,8 +108,6 @@ def run_visualizer(record=False, output_video="video\rush_hour_solution.mp4"):
         print(f"✅ Video saved to {output_video}")
 
     # === Automated test loop ===
-    solved = 0
-    test_env = RushHourEnv(num_of_vehicle=4, train=False)
     RushHourEnv.evaluate_model(model,test_env,episodes=50)
 
 if __name__ == "__main__":

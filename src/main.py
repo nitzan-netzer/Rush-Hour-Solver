@@ -3,6 +3,7 @@ import time
 import shutil
 from pathlib import Path
 from models.RLmodel import train_and_save_model
+from models.RL_model_without_early_stopping import train_and_save_model_without
 from environments.rush_hour_env import RushHourEnv
 from logs_utils.analyze_logs import analyze_logs
 from GUI.visualizer import run_visualizer  # ✅ Correct import
@@ -21,7 +22,7 @@ NUM_VEHICLES = 4
 
 
 # === Step 1: Train and Save Model ===
-def train_model():
+def train_model(enable_early_stopping=True):
     """Train and save the RL model with logging and early stopping."""
     print("🚀 Training the model...")
 
@@ -32,8 +33,10 @@ def train_model():
     log_file = LOG_DIR / f"{run_id}.csv"
 
     # Train and save the model
-    train_and_save_model(model_path=str(model_path), log_file=str(log_file))
-
+    if enable_early_stopping:
+        train_and_save_model(model_path=str(model_path), log_file=str(log_file))
+    else:
+        train_and_save_model_without(model_path=str(model_path), log_file=str(log_file))
     # Create/update symlink or fallback copy for the latest log
     latest_log_path = Path(LATEST_LOG_FILE)
     if latest_log_path.exists() or latest_log_path.is_symlink():
@@ -95,7 +98,7 @@ if __name__ == "__main__":
     VIDEO_DIR.mkdir(parents=True, exist_ok=True)
 
     # Step 1: Train the model and get the model path
-    model_path = train_model()
+    model_path = train_model(enable_early_stopping=False)
     print("✅ Step 1: Model training completed.")
 
     # Step 2: Evaluate the model

@@ -3,5 +3,5 @@ __pycache__
 database
 .coverage
 logs
-models
+models_zip
 videos

@@ -1,5 +1,6 @@
+import setup_path # NOQA
 from pathlib import Path
-import time
+
 from environments.rush_hour_env import RushHourEnv
 from stable_baselines3 import PPO
 from stable_baselines3.common.env_checker import check_env
@@ -44,3 +45,6 @@ def train_and_save_model(model_path="models/ppo_rush_hour_model_es.zip", log_fil
 
     # === Run evaluation ===
     RushHourEnv.evaluate_model(model,test_env,episodes=50)
+
+if __name__ == "__main__":
+    train_and_save_model()
