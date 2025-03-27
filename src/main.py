@@ -11,11 +11,11 @@ from stable_baselines3 import PPO
 # === Config ===
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"  # Suppress TensorFlow logs
 MODEL_DIR = Path("models/")  # Directory to store models
-LOG_DIR = Path("logs_csv/rush_hour/")  # Directory to store logs
+LOG_DIR = Path("logs/rush_hour/")  # Directory to store logs
 VIDEO_DIR = Path("videos/")  # Directory to store videos
 VIDEO_PATH = VIDEO_DIR / "rush_hour_demo.mp4"  # Path to save the video
 # Symlink or copy for the latest log
-LATEST_LOG_FILE = "logs_csv/rush_hour/run_latest.csv"
+LATEST_LOG_FILE = "logs/rush_hour/run_latest.csv"
 TEST_EPISODES = 50
 NUM_VEHICLES = 4
 

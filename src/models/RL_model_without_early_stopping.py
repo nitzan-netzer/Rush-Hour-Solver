@@ -6,7 +6,7 @@ from stable_baselines3.common.env_checker import check_env
 from logging.custom_logger import RushHourCSVLogger  # for episode logging
 
 # === Setup logging ===
-log_dir = Path("logs_csv") / "rush_hour"
+log_dir = Path("logs/logs") / "rush_hour"
 log_dir.mkdir(parents=True, exist_ok=True)
 run_id = f"run_{int(time.time())}_1"
 log_file = log_dir / f"{run_id}.csv"

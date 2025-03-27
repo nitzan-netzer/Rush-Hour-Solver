@@ -51,7 +51,7 @@ def run_visualizer(record=False, output_video="rush_hour_solution.mp4"):
     font = pygame.font.SysFont(None, 36)
 
     env = RushHourEnv(num_of_vehicle=4)
-    model = PPO.load("ppo_rush_hour_model_es", env=env)
+    model = PPO.load("models/ppo_rush_hour_model_es", env=env)
 
     obs, _ = env.reset()
     draw_board(screen, env.board, font)

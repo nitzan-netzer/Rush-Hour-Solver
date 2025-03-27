@@ -7,7 +7,7 @@ from logs_utils.custom_logger import RushHourCSVLogger
 from models.early_stopping import EarlyStoppingSuccessRateCallback
 
 
-def train_and_save_model(model_path="models/ppo_rush_hour_model_es.zip", log_file="logs_csv/rush_hour/run_latest.csv"):
+def train_and_save_model(model_path="models/ppo_rush_hour_model_es.zip", log_file="logs/rush_hour/run_latest.csv"):
     """Train and save the PPO model with logging and early stopping."""
 
     # === Setup logging ===
