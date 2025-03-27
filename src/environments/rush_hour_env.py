@@ -1,7 +1,7 @@
 from gymnasium import Env, spaces
 import numpy as np
 from random import choice
-from board import Board
+from environments.board import Board
 
 # 🚀 CHANGED: Add train/test split
 from sklearn.model_selection import train_test_split

@@ -2,9 +2,9 @@ import sys
 
 sys.path.append("src")
 if True:
-    from card_parkings import main as parking_main
-    from cards_generator import main as generator_main
-    from cards_original import main as original_main
+    from environments.card_parkings import main as parking_main
+    from environments.cards_generator import main as generator_main
+    from environments.cards_original import main as original_main
 
 
 def main():

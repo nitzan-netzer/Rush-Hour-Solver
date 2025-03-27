@@ -1,9 +1,9 @@
 from pathlib import Path
 import time
-from rush_hour_env import RushHourEnv, test_boards  # uses pre-split boards
+from environments.rush_hour_env import RushHourEnv, test_boards  # uses pre-split boards
 from stable_baselines3 import PPO
 from stable_baselines3.common.env_checker import check_env
-from custom_logger import RushHourCSVLogger  # for episode logging
+from logging.custom_logger import RushHourCSVLogger  # for episode logging
 
 # === Setup logging ===
 log_dir = Path("logs_csv") / "rush_hour"

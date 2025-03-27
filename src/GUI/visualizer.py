@@ -3,7 +3,7 @@ import time
 import numpy as np
 import cv2
 
-from rush_hour_env import RushHourEnv
+from environments.rush_hour_env import RushHourEnv
 from stable_baselines3 import PPO
 
 # Settings

@@ -4,9 +4,9 @@ import pygame
 import time
 import random
 from stable_baselines3 import PPO
-from board import Board
-from board_to_image import generate_board_image
-from rush_hour_env import RushHourEnv
+from environments.board import Board
+from environments.board_to_image import generate_board_image
+from environments.rush_hour_env import RushHourEnv
 
 # Constants
 TILE_SIZE = 60

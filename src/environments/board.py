@@ -6,7 +6,7 @@ import json
 
 import numpy as np
 
-from vehicles import RedCar, create_vehicle
+from environments.vehicles import RedCar, create_vehicle
 
 
 class Board:
@@ -51,9 +51,9 @@ class Board:
             col (int): The starting column of the vehicle.
         """
         if vehicle.direction == "RL":
-            self.board[row, col : col + vehicle.length] = vehicle.letter
+            self.board[row, col: col + vehicle.length] = vehicle.letter
         else:
-            self.board[row : row + vehicle.length, col] = vehicle.letter
+            self.board[row: row + vehicle.length, col] = vehicle.letter
         vehicle.row = row
         vehicle.col = col
         self.vehicles.append(vehicle)
@@ -85,12 +85,12 @@ class Board:
         if vehicle.direction == "RL":
             if col + vehicle.length > self.col:
                 return False
-            if np.any(self.board[row, col : col + vehicle.length] != ""):
+            if np.any(self.board[row, col: col + vehicle.length] != ""):
                 return False
         else:
             if row + vehicle.length > self.row:
                 return False
-            if np.any(self.board[row : row + vehicle.length, col] != ""):
+            if np.any(self.board[row: row + vehicle.length, col] != ""):
                 return False
 
         return True
@@ -222,7 +222,8 @@ class Board:
         board = Board(row, col, init_red_car=False)
         for vehicle_data in json_board["vehicles"]:
             vehicle = create_vehicle(vehicle_data)
-            board.add_vehicle(vehicle, vehicle_data["row"], vehicle_data["col"])
+            board.add_vehicle(
+                vehicle, vehicle_data["row"], vehicle_data["col"])
 
         return board
 

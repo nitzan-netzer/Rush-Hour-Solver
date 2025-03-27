@@ -8,10 +8,10 @@ from datetime import datetime
 
 from tqdm import tqdm
 
-from board_random import BoardRandom
-from board_to_image import car_colors, save_board_to_image, truck_colors
-from calculate_difficulty import calculate_difficulty
-from vehicles import Car, Truck
+from environments.board_random import BoardRandom
+from environments.board_to_image import car_colors, save_board_to_image, truck_colors
+from environments.calculate_difficulty import calculate_difficulty
+from environments.vehicles import Car, Truck
 
 DIRECTIONS = ["UD", "RL"]
 
@@ -110,7 +110,8 @@ def main():
         case _:
             print("Invalid difficulty")
             return
-    boards = cards_generator(num_cards, num_cars, num_trucks, num_step, threshold)
+    boards = cards_generator(
+        num_cards, num_cars, num_trucks, num_step, threshold)
     save(boards, path)
 
 

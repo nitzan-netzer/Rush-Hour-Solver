@@ -1,6 +1,6 @@
 import random
 
-from board import Board
+from environments.board import Board
 
 
 class BoardRandom(Board):
