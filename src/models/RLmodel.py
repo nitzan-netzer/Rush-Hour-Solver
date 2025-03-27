@@ -1,4 +1,4 @@
-import setup_path # NOQA
+import setup_path  # NOQA
 from pathlib import Path
 
 from environments.rush_hour_env import RushHourEnv
@@ -28,12 +28,12 @@ def train_and_save_model(model_path="models_zip/ppo_rush_hour_model_es.zip", log
     # === Callbacks ===
     csv_logger = RushHourCSVLogger(log_path=log_file)
     early_stop = EarlyStoppingSuccessRateCallback(
-        window_size=100, success_threshold=0.9
+        window_size=200, success_threshold=0.9, patience=20, verbose=1
     )
 
     # === Train with early stopping and logging ===
     print("📚 Training the model with early stopping and logging...")
-    model.learn(total_timesteps=300_000, callback=[csv_logger, early_stop])
+    model.learn(total_timesteps=500_000, callback=[csv_logger, early_stop])
 
     # === Save model ===
     model.save(model_path)
@@ -45,7 +45,8 @@ def train_and_save_model(model_path="models_zip/ppo_rush_hour_model_es.zip", log
     model = PPO.load(model_path, env=test_env)
 
     # === Run evaluation ===
-    evaluate_model(model,test_env,episodes=50)
+    evaluate_model(model, test_env, episodes=50)
+
 
 if __name__ == "__main__":
     train_and_save_model()

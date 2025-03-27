@@ -1,4 +1,4 @@
-import setup_path # NOQA
+import setup_path  # NOQA
 
 from gymnasium import Env, spaces
 import numpy as np
@@ -9,13 +9,15 @@ from environments.rewards import basic_reward
 from sklearn.model_selection import train_test_split
 from copy import deepcopy
 
+
 class RushHourEnv(Env):
     train_boards, test_boards = train_test_split(
         Board.load_multiple_boards("database/example-1000.json"),
         test_size=0.2,
         random_state=42
     )
-    def __init__(self, num_of_vehicle: int,rewards=basic_reward,train=True): 
+
+    def __init__(self, num_of_vehicle: int, rewards=basic_reward, train=True):
         self.num_of_vehicle = num_of_vehicle
         if train:
             self.boards = RushHourEnv.train_boards
@@ -31,13 +33,12 @@ class RushHourEnv(Env):
         self.state = None
         self.board = None
         self.get_reward = rewards
-       
+
     def reset(self, seed=None):
-        self.board =  deepcopy(choice(self.boards))
+        self.board = deepcopy(choice(self.boards))
         self.state = self.board.get_board_flatten().astype(np.uint8)
         self.num_steps = 0
         return self.state, self._get_info()
-    
 
     def step(self, action):
         vehicle_str, move_str = self.parse_action(action)
@@ -50,20 +51,20 @@ class RushHourEnv(Env):
         else:
             truncated = False
 
-        reward = self.get_reward(valid_move,done,truncated)
+        reward = self.get_reward(valid_move, done, truncated)
 
         self.state = self.board.get_board_flatten().astype(np.uint8)
-        return self.state, reward, done,truncated, self._get_info()
+        return self.state, reward, done, truncated, self._get_info()
 
     def render(self):
         print(self.board)
 
     def _get_info(self):
         non_empty_cells = np.count_nonzero(self.board.board != "")
-        red_car_escaped = self.board.game_over()  # 🚀 CHANGED: include escape flag
+        red_car_escaped = self.board.game_over()
         return {
             "non_empty_cells": non_empty_cells,
-            "red_car_escaped": red_car_escaped,  # 🚀 CHANGED
+            "red_car_escaped": red_car_escaped,
         }
 
     def parse_action(self, action):
@@ -72,4 +73,3 @@ class RushHourEnv(Env):
         move_str = ["U", "D", "L", "R"][move]
         vehicle_str = ["X", "A", "B", "O"][vehicle]
         return vehicle_str, move_str
-    

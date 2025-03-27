@@ -34,9 +34,11 @@ def train_model(enable_early_stopping=True):
 
     # Train and save the model
     if enable_early_stopping:
-        train_and_save_model(model_path=str(model_path), log_file=str(log_file))
+        train_and_save_model(model_path=str(
+            model_path), log_file=str(log_file))
     else:
-        train_and_save_model_without(model_path=str(model_path), log_file=str(log_file))
+        train_and_save_model_without(model_path=str(
+            model_path), log_file=str(log_file))
     # Create/update symlink or fallback copy for the latest log
     latest_log_path = Path(LATEST_LOG_FILE)
     if latest_log_path.exists() or latest_log_path.is_symlink():
@@ -62,7 +64,7 @@ def run_model_evaluation(model_path):
     model = PPO.load(str(model_path), env=test_env)
 
     # Use the evaluate_model function from RLmodel
-    evaluate_model(model,test_env)
+    evaluate_model(model, test_env)
     print("✅ Model evaluation completed.")
 
 
@@ -86,7 +88,7 @@ def visualize_and_save(model_path, video_path):
     print("\n🎥 Generating and saving visualization...")
 
     # Run visualizer with recording enabled
-    run_visualizer(model_path,record=True, output_video=str(video_path))
+    run_visualizer(model_path, record=True, output_video=str(video_path))
     print(f"✅ Video saved at: {video_path}")
 
 
