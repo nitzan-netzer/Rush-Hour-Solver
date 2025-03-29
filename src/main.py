@@ -10,6 +10,7 @@ from logs_utils.analyze_logs import analyze_logs
 from GUI.visualizer import run_visualizer  # ✅ Correct import
 from stable_baselines3 import PPO
 
+
 # === Config ===
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"  # Suppress TensorFlow logs
 MODEL_DIR = Path("models_zip/")  # Directory to store models
@@ -60,7 +61,7 @@ def train_model(enable_early_stopping=True):
 def run_model_evaluation(model_path):
     """Evaluate the trained model on test boards."""
     print("\n📊 Evaluating model on test boards...")
-    test_env = RushHourEnv(num_of_vehicle=NUM_VEHICLES, train=False)
+    test_env = RushHourEnv(num_of_vehicle=NUM_VEHICLES, train=True)
     model = PPO.load(str(model_path), env=test_env)
 
     # Use the evaluate_model function from RLmodel

@@ -33,10 +33,13 @@ class RushHourEnv(Env):
         self.state = None
         self.board = None
         self.get_reward = rewards
+        self.state_history = set()
 
     def reset(self, seed=None):
         self.board = deepcopy(choice(self.boards))
         self.state = self.board.get_board_flatten().astype(np.uint8)
+        self.state_history = set()
+        self.state_history.add(tuple(self.state))
         self.num_steps = 0
         return self.state, self._get_info()
 
@@ -45,15 +48,16 @@ class RushHourEnv(Env):
         vehicle = self.board.get_vehicle_by_letter(vehicle_str)
         valid_move = self.board.move_vehicle(vehicle, move_str)
         done = self.board.game_over()
+        self.state = self.board.get_board_flatten().astype(np.uint8)
         self.num_steps += 1
         if self.num_steps >= self.max_steps:
             truncated = True
         else:
             truncated = False
+        reward = self.get_reward(
+            self.state_history, self.state, vehicle, valid_move, done, truncated, self.board, self.num_steps)
 
-        reward = self.get_reward(valid_move, done, truncated)
-
-        self.state = self.board.get_board_flatten().astype(np.uint8)
+        self.state_history.add(tuple(self.state))
         return self.state, reward, done, truncated, self._get_info()
 
     def render(self):

@@ -3,6 +3,7 @@ from pathlib import Path
 
 from environments.rush_hour_env import RushHourEnv
 from environments.evaluate import evaluate_model
+from environments.rewards import valid_moves_reward, per_steps_reward, reward_function_no_repetition
 from stable_baselines3 import PPO
 from stable_baselines3.common.env_checker import check_env
 from logs_utils.custom_logger import RushHourCSVLogger
@@ -18,7 +19,8 @@ def train_and_save_model(model_path="models_zip/ppo_rush_hour_model_es.zip", log
 
     # === Create training environment ===
     print("🚀 Creating training environment...")
-    env = RushHourEnv(num_of_vehicle=4)  # Uses default training boards
+    # Uses default training boards
+    env = RushHourEnv(num_of_vehicle=4, rewards=per_steps_reward)
     check_env(env, warn=True)
 
     # === Create PPO model ===
