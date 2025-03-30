@@ -20,7 +20,7 @@ def train_and_save_model(model_path="models_zip/ppo_rush_hour_model_es.zip", log
     # === Create training environment ===
     print("🚀 Creating training environment...")
     # Uses default training boards
-    env = RushHourEnv(num_of_vehicle=4, rewards=per_steps_reward)
+    env = RushHourEnv(num_of_vehicle=4)
     check_env(env, warn=True)
 
     # === Create PPO model ===

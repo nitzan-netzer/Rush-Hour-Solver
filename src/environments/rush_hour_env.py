@@ -44,7 +44,7 @@ class RushHourEnv(Env):
         return self.state, self._get_info()
 
     def step(self, action):
-        vehicle_str, move_str = self.parse_action(action)
+        vehicle_str, move_str = self.new_parse_action(action)
         vehicle = self.board.get_vehicle_by_letter(vehicle_str)
         valid_move = self.board.move_vehicle(vehicle, move_str)
         done = self.board.game_over()
@@ -76,4 +76,21 @@ class RushHourEnv(Env):
         move = action % 4
         move_str = ["U", "D", "L", "R"][move]
         vehicle_str = ["X", "A", "B", "O"][vehicle]
+        return vehicle_str, move_str
+
+    def new_parse_action(self, action):
+        vehicle = action // 4
+        move = action % 4
+        move_str = ["U", "D", "L", "R"][move]
+        vehicle_str = ["X", "A", "B", "O"][vehicle]
+        vehicle_obj = self.board.get_vehicle_by_letter(vehicle_str)
+
+        # Check if the selected move is valid
+        possible_moves = vehicle_obj.get_possible_moves(self.board)
+
+        # If the move is invalid, choose a random valid move
+        if move_str not in possible_moves:
+            if possible_moves:
+                move_str = choice(possible_moves)
+
         return vehicle_str, move_str
