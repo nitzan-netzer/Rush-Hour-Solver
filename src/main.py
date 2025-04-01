@@ -29,7 +29,7 @@ def train_model(enable_early_stopping=True):
 
     # Generate a unique run ID based on timestamp
     run_id = f"run_{int(time.time())}"
-    model_name = f"ppo_rush_hour_{run_id}.zip"
+    model_name = f"ppo_rush_hour_early_stopping{run_id}.zip"
     model_path = MODEL_DIR / model_name
     log_file = LOG_DIR / f"{run_id}.csv"
 
