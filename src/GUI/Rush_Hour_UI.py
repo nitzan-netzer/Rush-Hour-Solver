@@ -1,11 +1,11 @@
 # Creating UI as described in the documentation of the project desing using pygame
-import setup_path # NOQA
+import setup_path  # NOQA
 
 import pygame
 import time
 import random
-from stable_baselines3 import PPO
-from environments.board_to_image import generate_board_image,letter_to_color
+from stable_baselines3 import PPO, DQN
+from environments.board_to_image import generate_board_image, letter_to_color
 from environments.rush_hour_env import RushHourEnv
 
 # Constants
@@ -37,21 +37,21 @@ def generate_thumbnails():
 
 # Solve the selected board
 
+
 def solve_board(screen, model, board):
     env = RushHourEnv(num_of_vehicle=4)
     obs, _ = env.reset(board)
     font = pygame.font.SysFont(FONT_NAME, 24)
     large_font = pygame.font.SysFont(FONT_NAME, 48)
 
-
     draw_board(screen, env.board)
     step_counter = 0
     time.sleep(1)
 
-    for step_counter in range(1,50):
+    for step_counter in range(1, 50):
         action, _ = model.predict(obs)
         obs, reward, done, _, _ = env.step(action)
-        draw_board(screen, env.board,step_counter)
+        draw_board(screen, env.board, step_counter)
         screen_center_x = screen.get_width() // 2
         screen_bottom_y = screen.get_height() - 40
         time.sleep(0.3)
@@ -64,7 +64,8 @@ def solve_board(screen, model, board):
             # Compute center positions
 
             # Blit texts
-            screen.blit(escaped_text, (screen_center_x - escaped_text.get_width() // 2, 40))
+            screen.blit(escaped_text, (screen_center_x -
+                        escaped_text.get_width() // 2, 40))
 
             pygame.display.flip()
             time.sleep(2)
@@ -73,24 +74,25 @@ def solve_board(screen, model, board):
 # Draw current board
 
 
-def draw_board(screen, board_obj,step_counter=0):
+def draw_board(screen, board_obj, step_counter=0):
     screen_center_x = screen.get_width() // 2
     screen_bottom_y = screen.get_height() - 40
     font = pygame.font.SysFont(FONT_NAME, 24)
-    
+
     screen.fill((240, 240, 240))
     board = board_obj.board
     for r in range(6):
         for c in range(6):
             letter = board[r, c]
-            color = letter_to_color.get(letter,GRAY)
+            color = letter_to_color.get(letter, GRAY)
             rect = pygame.Rect(c * 80, r * 80, 80, 80)
             pygame.draw.rect(screen, color, rect)
             pygame.draw.rect(screen, (0, 0, 0), rect, 1)
     pygame.draw.line(screen, (255, 255, 255),
                      ((5 + 1) * 80, 2 * 80), ((5 + 1) * 80, 3 * 80), 5)
     steps_text = font.render(f"Steps: {step_counter}", True, (0, 0, 0))
-    screen.blit(steps_text, (screen_center_x - steps_text.get_width() // 2, screen_bottom_y))
+    screen.blit(steps_text, (screen_center_x -
+                steps_text.get_width() // 2, screen_bottom_y))
     pygame.display.flip()
 
 # Main UI loop
@@ -103,7 +105,12 @@ def main():
     font = pygame.font.SysFont(FONT_NAME, 18)
 
     big_font = pygame.font.SysFont(FONT_NAME, 28)
-    model = PPO.load(r"models_zip\ppo_rush_hour.zip")
+    # DQN - early stopping
+    # model = DQN.load(r"models_zip\dqn_rush_hour_with_early_stopping_run_1743522357.zip")
+    # DQN - early stopping, stabelized
+    # model = DQN.load(r"models_zip\dqn_rush_hour_with_early_stopping_modified_run_1743522759.zip")
+    # PPO without early stopping
+    model = PPO.load(r"models_zip\ppo_rush_hour_run_1743345645.zip")
     thumbnails = generate_thumbnails()
 
     # Prepare level button rects

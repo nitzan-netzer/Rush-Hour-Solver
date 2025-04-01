@@ -28,14 +28,18 @@ def train_and_save_model(model_path="models_zip/ppo_rush_hour_model_es.zip", log
     model = DQN(
         "MlpPolicy",
         env,
-        policy_kwargs={"net_arch": [256, 128, 64]},
-        verbose=1,
-        buffer_size=10_000,
-        learning_starts=1_000,
-        exploration_fraction=0.2,
-        batch_size=64,
+        learning_rate=1e-4,
+        buffer_size=50000,
+        learning_starts=1000,
+        batch_size=128,
+        exploration_fraction=0.15,
         gamma=0.99,
-        target_update_interval=500
+        target_update_interval=1000,
+        policy_kwargs={
+            "net_arch": [256, 128, 64],
+            "optimizer_kwargs": {"weight_decay": 1e-5}
+        },
+        verbose=1
     )
 
     # === Callbacks ===
