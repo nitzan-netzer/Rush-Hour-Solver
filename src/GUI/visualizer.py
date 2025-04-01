@@ -46,7 +46,7 @@ def draw_board(screen, board, font):
     pygame.display.flip()
 
 
-def run_visualizer(model_path,record=False, output_video="video\rush_hour_solution.mp4"):
+def run_visualizer(model_path,record=False, output_video=r"videos\rush_hour_solution.mp4"):
     pygame.init()
     screen = pygame.display.set_mode((WINDOW_SIZE, WINDOW_SIZE))
     pygame.display.set_caption("Rush Hour - Agent Demo")
@@ -109,7 +109,7 @@ def run_visualizer(model_path,record=False, output_video="video\rush_hour_soluti
         print(f"✅ Video saved to {output_video}")
 
     # === Automated test loop ===
-    evaluate_model(model,test_env,episodes=50)
+    evaluate_model(model,test_env)
 
 if __name__ == "__main__":
     run_visualizer(model_path="models_zip/ppo_rush_hour.zip",record=True)
