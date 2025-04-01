@@ -1,4 +1,4 @@
-import setup_path # NOQA
+import setup_path  # NOQA
 import pygame
 import time
 import numpy as np
@@ -6,7 +6,7 @@ import cv2
 
 from environments.rush_hour_env import RushHourEnv
 from environments.evaluate import evaluate_model
-from stable_baselines3 import PPO
+from stable_baselines3 import PPO, DQN
 
 # Settings
 TILE_SIZE = 80
@@ -46,14 +46,14 @@ def draw_board(screen, board, font):
     pygame.display.flip()
 
 
-def run_visualizer(model_path,record=False, output_video=r"videos\rush_hour_solution.mp4"):
+def run_visualizer(model_path, record=False, output_video=r"videos\rush_hour_solution.mp4"):
     pygame.init()
     screen = pygame.display.set_mode((WINDOW_SIZE, WINDOW_SIZE))
     pygame.display.set_caption("Rush Hour - Agent Demo")
     font = pygame.font.SysFont(None, 36)
 
     test_env = RushHourEnv(num_of_vehicle=4, train=False)
-    model = PPO.load(model_path, env=test_env)
+    model = DQN.load(model_path, env=test_env)
 
     obs, _ = test_env.reset()
     draw_board(screen, test_env.board, font)
@@ -109,7 +109,9 @@ def run_visualizer(model_path,record=False, output_video=r"videos\rush_hour_solu
         print(f"✅ Video saved to {output_video}")
 
     # === Automated test loop ===
-    evaluate_model(model,test_env)
+    evaluate_model(model, test_env)
+
 
 if __name__ == "__main__":
-    run_visualizer(model_path="models_zip/ppo_rush_hour.zip",record=True)
+    run_visualizer(
+        model_path="models_zip/dqn_rush_hour_with_early_stopping_run_1743522357.zip", record=True)

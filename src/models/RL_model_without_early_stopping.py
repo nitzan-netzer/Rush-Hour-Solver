@@ -19,11 +19,22 @@ def train_and_save_model_without(model_path="models/ppo_rush_hour_model_es.zip",
     check_env(env, warn=True)
 
     # === Create PPO model ===
-    model = PPO("MlpPolicy", env, verbose=1)
+    model = DQN(
+        "MlpPolicy",
+        env,
+        policy_kwargs={"net_arch": [256, 128, 64]},
+        verbose=1,
+        buffer_size=10_000,
+        learning_starts=1_000,
+        exploration_fraction=0.2,
+        batch_size=64,
+        gamma=0.99,
+        target_update_interval=500
+    )
 
     # === Train the model (no early stopping) ===
     callback = RushHourCSVLogger(log_path=log_file)
-    model.learn(total_timesteps=500_000, callback=callback)
+    model.learn(total_timesteps=200_000, callback=callback)
 
     # === Save the model ===
     model.save(model_path)
