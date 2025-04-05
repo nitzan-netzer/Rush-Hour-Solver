@@ -24,6 +24,7 @@ letter_to_color = {
     "P": (128, 0, 128),  # Purple
     "Q": (0, 0, 255),  # Blue
     "R": (0, 128, 128),  # Teal
+    "": (220, 220, 220),  # Empty space color
 }
 GRAY = (128, 128, 128)
 WHITE = (255, 255, 255)

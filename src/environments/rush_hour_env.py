@@ -1,22 +1,33 @@
-import setup_path # NOQA
-
-from gymnasium import Env, spaces
-import numpy as np
+import json
+from copy import deepcopy
 from random import choice
+
+import numpy as np
+from gymnasium import Env, spaces
+from sklearn.model_selection import train_test_split
+
+import setup_path  # NOQA
 from environments.board import Board
 from environments.rewards import basic_reward
 
-from sklearn.model_selection import train_test_split
-from copy import deepcopy
+
+def load_config():
+    with open("database/config.json", "r") as f:
+        config = json.load(f)
+    json_boards_path = config.get("path")
+    num_of_vehicle = config.get("num_cars") + config.get("num_trucks") +1
+    vehicles_latter = config.get("vehicles_latter")
+    return json_boards_path, num_of_vehicle, vehicles_latter
+
 
 class RushHourEnv(Env):
+    json_boards_path,num_of_vehicle,vehicles_latter =load_config()
     train_boards, test_boards = train_test_split(
-        Board.load_multiple_boards("database/example-1000.json"),
+        Board.load_multiple_boards(json_boards_path),
         test_size=0.2,
         random_state=42
     )
-    def __init__(self, num_of_vehicle: int,rewards=basic_reward,train=True): 
-        self.num_of_vehicle = num_of_vehicle
+    def __init__(self,num_of_vehicle:int ,rewards=basic_reward,train=True): 
         if train:
             self.boards = RushHourEnv.train_boards
             self.max_steps = 500
@@ -24,7 +35,7 @@ class RushHourEnv(Env):
             self.boards = RushHourEnv.test_boards
             self.max_steps = 100
 
-        self.action_space = spaces.Discrete(num_of_vehicle * 4)
+        self.action_space = spaces.Discrete(self.num_of_vehicle * 4)
         self.observation_space = spaces.Box(
             low=0, high=255, shape=(36,), dtype=np.uint8
         )
@@ -73,6 +84,6 @@ class RushHourEnv(Env):
         vehicle = action // 4
         move = action % 4
         move_str = ["U", "D", "L", "R"][move]
-        vehicle_str = ["X", "A", "B", "O"][vehicle]
+        vehicle_str = self.vehicles_latter[vehicle]
         return vehicle_str, move_str
     

@@ -324,3 +324,21 @@ class Board:
                 if cell != "":
                     arr[i * self.col + j] = ord(cell)
         return arr
+    
+    def get_hash(self):
+        """
+        Get a hash representation of the board state.
+
+        Returns:
+            int: A hash value representing the board state.
+        """
+        return hash(tuple(self.get_board_flatten()))
+    
+    def get_all_vehicles_latter(self):
+        """"
+        Get all vehicle letters on the board."
+        """
+    
+        vehicles_str = [vehicle.letter for vehicle in self.vehicles]
+        vehicles_str.sort()
+        return vehicles_str

@@ -7,19 +7,13 @@ import cv2
 from environments.rush_hour_env import RushHourEnv
 from environments.evaluate import evaluate_model
 from stable_baselines3 import PPO
-
+from environments.board_to_image import letter_to_color
 # Settings
 TILE_SIZE = 80
 BOARD_SIZE = 6
 WINDOW_SIZE = TILE_SIZE * BOARD_SIZE
 
-COLORS = {
-    "": (220, 220, 220),
-    "X": (255, 0, 0),
-    "A": (0, 128, 255),
-    "B": (0, 200, 100),
-    "O": (160, 0, 255),
-}
+COLORS = letter_to_color
 
 TEXT_COLOR = (0, 0, 0)
 
