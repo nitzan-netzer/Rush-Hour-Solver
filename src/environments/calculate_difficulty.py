@@ -123,3 +123,85 @@ def shortest_solution_path_length(start_board):
                 queue.append((next_board, depth + 1))
 
     return -1  # No solution found
+
+
+# ----  heuristics recursive blocking ----
+
+def classify_stage_by_recursive_score(score):
+    """
+    Converts a recursive blocking score into a complexity label.
+
+    Args:
+        score (int): Recursive blocker score.
+
+    Returns:
+        str: 'easy', 'medium', or 'hard'
+    """
+    if score <= 5:
+        return "easy"
+    elif score <= 10:
+        return "medium"
+    else:
+        return "hard"
+
+
+def recursive_blocking_score(board):
+    """
+    Recursively calculates a difficulty score based on vehicles blocking
+    the red car and the blockers of those blockers (depth-based blocking).
+
+    Args:
+        board (Board): The game board object.
+
+    Returns:
+        int: A heuristic difficulty score (higher = harder).
+    """
+    red_car = board.get_vehicle_by_letter("X")
+    if not red_car:
+        raise ValueError("Red car (X) not found on the board.")
+
+    return _calculate_difficulty_recursive(board, red_car, visited=set())
+
+
+# def _count_recursive_blockers(board, vehicle, visited):
+#     """
+#     Recursive helper that counts the blockers in front of a vehicle.
+
+#     Args:
+#         board (Board): Current board.
+#         vehicle (Vehicle): Vehicle being evaluated.
+#         visited (set): Set of vehicle letters already visited.
+
+#     Returns:
+#         int: Recursive blocker count.
+#     """
+#     if vehicle.letter in visited:
+#         return 0
+#     visited.add(vehicle.letter)
+
+#     difficulty = 0
+#     row, col = vehicle.row, vehicle.col
+#     length = vehicle.length
+
+#     if vehicle.direction == "RL":
+#         for c in range(col + length, board.col):
+#             blocking_letter = board.board[row, c]
+#             if blocking_letter != "":
+#                 blocker = board.get_vehicle_by_letter(blocking_letter)
+#                 if blocker and blocker.letter not in visited:
+#                     difficulty += 1
+#                     difficulty += _count_recursive_blockers(
+#                         board, blocker, visited)
+#                 break  # Stop at the first blocker
+#     elif vehicle.direction == "UD":
+#         for r in range(row + length, board.row):
+#             blocking_letter = board.board[r, col]
+#             if blocking_letter != "":
+#                 blocker = board.get_vehicle_by_letter(blocking_letter)
+#                 if blocker and blocker.letter not in visited:
+#                     difficulty += 1
+#                     difficulty += _count_recursive_blockers(
+#                         board, blocker, visited)
+#                 break
+
+#     return difficulty

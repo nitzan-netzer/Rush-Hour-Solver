@@ -8,7 +8,7 @@ from environments.rush_hour_env import RushHourEnv
 from environments.evaluate import evaluate_model
 from logs_utils.analyze_logs import analyze_logs
 from GUI.visualizer import run_visualizer
-from environments.calculate_difficulty import shortest_solution_path_length
+from environments.calculate_difficulty import shortest_solution_path_length, recursive_blocking_score, classify_stage_by_recursive_score
 from stable_baselines3 import PPO
 
 # === Config ===
@@ -70,6 +70,14 @@ def run_model_evaluation(model_path):
         print(board)  # Uses __str__() to show the board
         steps = shortest_solution_path_length(board)
         print(f"➡️  Optimal solution length: {steps} moves")
+
+    print("\n🧠 Sample Boards with Complexity:")
+    for i, board in enumerate(test_env.boards[:5]):
+        print(f"\n🔹 Board {i+1}")
+        print(board)
+        score = recursive_blocking_score(board)
+        label = classify_stage_by_recursive_score(score)
+        print(f"➡️ Recursive Score: {score} → Complexity: {label}")
 
     # Use the evaluate_model function from RLmodel
     evaluate_model(model, test_env)
