@@ -2,6 +2,8 @@
 This module contains the function to calculate the difficulty of a stage
 based on the number of mechanisms
 """
+from collections import deque
+from copy import deepcopy
 
 
 def calculate_difficulty(board):
@@ -81,3 +83,43 @@ def _calculate_difficulty_recursive(board, vehicle, visited=None):
                 break  # Stop after the first blocking vehicle
 
     return difficulty
+
+
+# ---- BFS Shortest Path Length Algorithm ----
+
+def get_board_hash(board):
+    """Generate a hashable representation of the board for visited state tracking."""
+    return tuple(board.get_board_flatten())
+
+
+def shortest_solution_path_length(start_board):
+    """
+    Use BFS to calculate the shortest number of steps needed to solve the board.
+
+    Args:
+        start_board (Board): Initial board state.
+
+    Returns:
+        int: Number of steps in the shortest solution, or -1 if no solution found.
+    """
+    visited = set()
+    queue = deque([(deepcopy(start_board), 0)])
+
+    while queue:
+        board, depth = queue.popleft()
+
+        if board.game_over():
+            return depth
+
+        board_hash = get_board_hash(board)
+        if board_hash in visited:
+            continue
+        visited.add(board_hash)
+
+        for letter, move in board.get_all_moves():
+            next_board = deepcopy(board)
+            vehicle = next_board.get_vehicle_by_letter(letter)
+            if next_board.move_vehicle(vehicle, move):
+                queue.append((next_board, depth + 1))
+
+    return -1  # No solution found

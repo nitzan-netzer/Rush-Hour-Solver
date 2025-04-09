@@ -7,7 +7,8 @@ from models.RL_model_without_early_stopping import train_and_save_model_without
 from environments.rush_hour_env import RushHourEnv
 from environments.evaluate import evaluate_model
 from logs_utils.analyze_logs import analyze_logs
-from GUI.visualizer import run_visualizer  # ✅ Correct import
+from GUI.visualizer import run_visualizer
+from environments.calculate_difficulty import shortest_solution_path_length
 from stable_baselines3 import PPO
 
 # === Config ===
@@ -34,9 +35,11 @@ def train_model(enable_early_stopping=True):
 
     # Train and save the model
     if enable_early_stopping:
-        train_and_save_model(model_path=str(model_path), log_file=str(log_file))
+        train_and_save_model(model_path=str(
+            model_path), log_file=str(log_file))
     else:
-        train_and_save_model_without(model_path=str(model_path), log_file=str(log_file))
+        train_and_save_model_without(model_path=str(
+            model_path), log_file=str(log_file))
     # Create/update symlink or fallback copy for the latest log
     latest_log_path = Path(LATEST_LOG_FILE)
     if latest_log_path.exists() or latest_log_path.is_symlink():
@@ -61,8 +64,15 @@ def run_model_evaluation(model_path):
     test_env = RushHourEnv(num_of_vehicle=NUM_VEHICLES, train=False)
     model = PPO.load(str(model_path), env=test_env)
 
+    print("\n🧠 Sample Boards and Their Shortest Solution Path Lengths:")
+    for i, board in enumerate(test_env.boards[:5]):
+        print(f"\n🔹 Board {i+1}")
+        print(board)  # Uses __str__() to show the board
+        steps = shortest_solution_path_length(board)
+        print(f"➡️  Optimal solution length: {steps} moves")
+
     # Use the evaluate_model function from RLmodel
-    evaluate_model(model,test_env)
+    evaluate_model(model, test_env)
     print("✅ Model evaluation completed.")
 
 
@@ -86,7 +96,7 @@ def visualize_and_save(model_path, video_path):
     print("\n🎥 Generating and saving visualization...")
 
     # Run visualizer with recording enabled
-    run_visualizer(model_path,record=True, output_video=str(video_path))
+    run_visualizer(model_path, record=True, output_video=str(video_path))
     print(f"✅ Video saved at: {video_path}")
 
 
