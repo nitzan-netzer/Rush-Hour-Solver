@@ -8,7 +8,7 @@ from environments.rush_hour_env import RushHourEnv
 from environments.evaluate import evaluate_model
 from logs_utils.analyze_logs import analyze_logs
 from GUI.visualizer import run_visualizer  # ✅ Correct import
-from stable_baselines3 import PPO, DQN
+from stable_baselines3 import PPO
 
 
 # === Config ===
@@ -29,7 +29,7 @@ def train_model(enable_early_stopping=True):
 
     # Generate a unique run ID based on timestamp
     run_id = f"run_{int(time.time())}"
-    model_name = f"dqn_rush_hour_with_early_stopping_{run_id}.zip"
+    model_name = f"ppo_rush_hour_with_cnn_{run_id}.zip"
     model_path = MODEL_DIR / model_name
     log_file = LOG_DIR / f"{run_id}.csv"
 
@@ -62,7 +62,7 @@ def run_model_evaluation(model_path):
     """Evaluate the trained model on test boards."""
     print("\n📊 Evaluating model on test boards...")
     test_env = RushHourEnv(num_of_vehicle=NUM_VEHICLES, train=True)
-    model = DQN.load(str(model_path), env=test_env)
+    model = PPO.load(str(model_path), env=test_env)
 
     # Use the evaluate_model function from RLmodel
     evaluate_model(model, test_env)

@@ -28,18 +28,20 @@ class RushHourEnv(Env):
 
         self.action_space = spaces.Discrete(num_of_vehicle * 4)
         self.observation_space = spaces.Box(
-            low=0, high=255, shape=(36,), dtype=np.uint8
+            low=0.0, high=1.0, shape=(16, 6, 6), dtype=np.float32
         )
+
         self.state = None
         self.board = None
         self.get_reward = rewards
         self.state_history = set()
 
-    def reset(self, seed=None):
+    def reset(self, seed=None, options=None):
+        super().reset(seed=seed)
         self.board = deepcopy(choice(self.boards))
-        self.state = self.board.get_board_flatten().astype(np.uint8)
+        self.state = self.board.get_board_numeric()
         self.state_history = set()
-        self.state_history.add(tuple(self.state))
+        self.state_history.add(tuple(self.state.flatten()))
         self.num_steps = 0
         return self.state, self._get_info()
 
@@ -48,7 +50,9 @@ class RushHourEnv(Env):
         vehicle = self.board.get_vehicle_by_letter(vehicle_str)
         valid_move = self.board.move_vehicle(vehicle, move_str)
         done = self.board.game_over()
-        self.state = self.board.get_board_flatten().astype(np.uint8)
+
+        self.state = self.board.get_board_numeric()
+
         self.num_steps += 1
         if self.num_steps >= self.max_steps:
             truncated = True
@@ -57,7 +61,7 @@ class RushHourEnv(Env):
         reward = self.get_reward(
             self.state_history, self.state, vehicle, valid_move, done, truncated, self.board, self.num_steps)
 
-        self.state_history.add(tuple(self.state))
+        self.state_history.add(tuple(self.state.flatten()))
         return self.state, reward, done, truncated, self._get_info()
 
     def render(self):

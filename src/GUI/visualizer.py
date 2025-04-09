@@ -6,7 +6,7 @@ import cv2
 
 from environments.rush_hour_env import RushHourEnv
 from environments.evaluate import evaluate_model
-from stable_baselines3 import PPO, DQN
+from stable_baselines3 import PPO
 
 # Settings
 TILE_SIZE = 80
@@ -53,7 +53,7 @@ def run_visualizer(model_path, record=False, output_video=r"videos\rush_hour_sol
     font = pygame.font.SysFont(None, 36)
 
     test_env = RushHourEnv(num_of_vehicle=4, train=False)
-    model = DQN.load(model_path, env=test_env)
+    model = PPO.load(model_path, env=test_env)
 
     obs, _ = test_env.reset()
     draw_board(screen, test_env.board, font)

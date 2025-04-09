@@ -2,7 +2,7 @@
 This module defines the `Board` class, which represents the game board for a rush hour puzzle game.
 The board manages the placement and movement of vehicles, ensuring they follow rules and constraints.
 """
-import setup_path # NOQA
+import setup_path  # NOQA
 
 import json
 
@@ -324,3 +324,22 @@ class Board:
                 if cell != "":
                     arr[i * self.col + j] = ord(cell)
         return arr
+
+    def get_board_numeric(self):
+        """
+            Returns the board as a one-hot encoded 3D numpy array of shape (1, 6, 6, N).
+            Each channel represents one vehicle type.
+        """
+        letter_list = list("XABCDEFGHIJKOPQR")  # All possible vehicle letters
+        letter_to_index = {letter: i for i, letter in enumerate(letter_list)}
+        board_numeric = np.zeros((6, 6, len(letter_list)), dtype=np.float32)
+
+        for r in range(6):
+            for c in range(6):
+                if self.board[r, c] != "":
+                    idx = letter_to_index[self.board[r, c]]
+                    board_numeric[r, c, idx] = 1.0
+
+        # Move channel to the front for PyTorch (C, H, W)
+        # Shape: (1, C, 6, 6)
+        return board_numeric.transpose(2, 0, 1)  # Shape: (16, 6, 6)

@@ -8,6 +8,7 @@ from stable_baselines3 import PPO, DQN
 from stable_baselines3.common.env_checker import check_env
 from logs_utils.custom_logger import RushHourCSVLogger
 from models.early_stopping import EarlyStoppingSuccessRateCallback
+from models.custom_cnn import SmallBoardCNN
 
 
 def train_and_save_model(model_path="models_zip/ppo_rush_hour_model_es.zip", log_file="logs/rush_hour/run_latest.csv"):
@@ -24,20 +25,12 @@ def train_and_save_model(model_path="models_zip/ppo_rush_hour_model_es.zip", log
     check_env(env, warn=True)
 
     # === Create PPO model ===
-    print("🧠 Initializing DQN model...")
-    model = DQN(
-        "MlpPolicy",
-        env,
-        learning_rate=1e-4,
-        buffer_size=50000,
-        learning_starts=1000,
-        batch_size=128,
-        exploration_fraction=0.15,
-        gamma=0.99,
-        target_update_interval=1000,
+    print("🧠 Initializing PPO model with CNN policy...")
+    model = PPO(
+        policy="CnnPolicy",
+        env=env,
         policy_kwargs={
-            "net_arch": [256, 128, 64],
-            "optimizer_kwargs": {"weight_decay": 1e-5}
+            "features_extractor_class": SmallBoardCNN,
         },
         verbose=1
     )
@@ -59,7 +52,7 @@ def train_and_save_model(model_path="models_zip/ppo_rush_hour_model_es.zip", log
     # === Load model for test evaluation ===
     print("\n🚀 Evaluating on test boards...")
     test_env = RushHourEnv(num_of_vehicle=4, train=False)
-    model = DQN.load(model_path, env=test_env)
+    model = PPO.load(model_path, env=test_env)
 
     # === Run evaluation ===
     evaluate_model(model, test_env, episodes=50)

@@ -4,7 +4,7 @@ import setup_path  # NOQA
 import pygame
 import time
 import random
-from stable_baselines3 import PPO, DQN
+from stable_baselines3 import PPO
 from environments.board_to_image import generate_board_image, letter_to_color
 from environments.rush_hour_env import RushHourEnv
 
@@ -105,11 +105,6 @@ def main():
     font = pygame.font.SysFont(FONT_NAME, 18)
 
     big_font = pygame.font.SysFont(FONT_NAME, 28)
-    # DQN - early stopping
-    # model = DQN.load(r"models_zip\dqn_rush_hour_with_early_stopping_run_1743522357.zip")
-    # DQN - early stopping, stabelized
-    # model = DQN.load(r"models_zip\dqn_rush_hour_with_early_stopping_modified_run_1743522759.zip")
-    # PPO without early stopping
     model = PPO.load(r"models_zip\ppo_rush_hour_run_1743345645.zip")
     thumbnails = generate_thumbnails()
 

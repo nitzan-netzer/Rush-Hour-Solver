@@ -9,7 +9,7 @@ from logs_utils.custom_logger import RushHourCSVLogger  # for episode logging
 
 
 def train_and_save_model_without(model_path="models/ppo_rush_hour_model_es.zip", log_file="logs/rush_hour/run_latest.csv"):
-    """Train and save the PPO model with logging and early stopping."""
+    """Train and save the PPO model with logging (no early stopping)."""
     # === Setup logging ===
     log_dir = Path(log_file).parent
     log_dir.mkdir(parents=True, exist_ok=True)
@@ -18,18 +18,20 @@ def train_and_save_model_without(model_path="models/ppo_rush_hour_model_es.zip",
     env = RushHourEnv(num_of_vehicle=4)  # uses training boards by default
     check_env(env, warn=True)
 
-    # === Create PPO model ===
-    model = DQN(
-        "MlpPolicy",
+    # === Create PPO model using CNN policy ===
+    model = PPO(
+        "CnnPolicy",
         env,
-        policy_kwargs={"net_arch": [256, 128, 64]},
-        verbose=1,
-        buffer_size=10_000,
-        learning_starts=1_000,
-        exploration_fraction=0.2,
+        learning_rate=2.5e-4,
+        n_steps=128,
         batch_size=64,
+        n_epochs=4,
         gamma=0.99,
-        target_update_interval=500
+        gae_lambda=0.95,
+        clip_range=0.2,
+        vf_coef=0.5,
+        ent_coef=0.01,
+        verbose=1
     )
 
     # === Train the model (no early stopping) ===
