@@ -3,24 +3,26 @@ from pathlib import Path
 
 from environments.rush_hour_env import RushHourEnv
 from environments.evaluate import evaluate_model
-from stable_baselines3 import PPO
+from stable_baselines3 import PPO, DQN, A2C
 from stable_baselines3.common.env_checker import check_env
 from utils.custom_logger import RushHourCSVLogger
 from models.early_stopping import EarlyStoppingSuccessRateCallback
 
-from utils.config import MODEL_PATH,LOG_FILE,NUM_VEHICLES
+from utils.config import MODEL_PATH,LOG_FILE_PATH,NUM_VEHICLES
 
-class PPOModel:
-    def __init__(self,env, model_path=MODEL_PATH, log_file=LOG_FILE,enable_early_stopping=True):
+class RLModel:
+    def __init__(self,model_class,env,model_path,log_file,early_stopping=True):
         self.env = env
-        self.model_path = model_path
+        self.model_class = model_class  # PPO, DQN, A2C, etc.
+        self.model_name = model_class.__name__
+        self.model_path = model_path 
         self.log_file = log_file
-        self.enable_early_stopping = enable_early_stopping
+        self.early_stopping = early_stopping
         self.setup_logging()
 
         # === Create PPO model ===
-        print("🧠 Initializing PPO model...")
-        self.model = PPO("MlpPolicy", self.env, verbose=1)
+        print(f"🧠 Initializing {self.model_name} model...")
+        self.model = model_class("MlpPolicy", self.env, verbose=1)
 
     def setup_logging(self):
         # === Setup logging ===
@@ -30,7 +32,7 @@ class PPOModel:
     def train(self):
         # === Callbacks ===
         csv_logger = RushHourCSVLogger(log_path=self.log_file)
-        if self.enable_early_stopping:
+        if self.early_stopping:
             print("📚 Training the model with early stopping and logging...")
 
             early_stop = EarlyStoppingSuccessRateCallback(
@@ -48,10 +50,10 @@ class PPOModel:
     def evaluate(self,test_env,episodes=None):
         # === Load model for test evaluation ===
         print("\n🚀 Evaluating on test boards...")
-        model = PPO.load(self.model_path, env=test_env)
+        model = self.model_class.load(self.model_path, env=test_env)
         evaluate_model(model,test_env,episodes)
 
-def run(num_of_vehicle,enable_early_stopping=False):
+def run(num_of_vehicle,model_class,early_stopping=False):
     print("🚀 Creating training environment...")
     train_env = RushHourEnv(num_of_vehicle=num_of_vehicle,train=True)
     check_env(train_env, warn=True)
@@ -59,12 +61,14 @@ def run(num_of_vehicle,enable_early_stopping=False):
     test_env = RushHourEnv(num_of_vehicle=num_of_vehicle,train=False)
     check_env(test_env, warn=True)
 
-    ppo_model = PPOModel(train_env,enable_early_stopping=enable_early_stopping)
-    ppo_model.train()
-    ppo_model.save()
-    ppo_model.evaluate(test_env)
+    model = RLModel(model_class,train_env,model_path=MODEL_PATH,log_file=LOG_FILE_PATH,early_stopping=early_stopping)
+    model.train()
+    model.save()
+    model.evaluate(test_env)
 
     return MODEL_PATH
 
 if __name__ == "__main__":
-    run(num_of_vehicle=NUM_VEHICLES,enable_early_stopping=True)
+    run(num_of_vehicle=NUM_VEHICLES,model_class=PPO,early_stopping=True)
+    #run(num_of_vehicle=NUM_VEHICLES,model_class=DQN,early_stopping=True)
+    #run(num_of_vehicle=NUM_VEHICLES,model_class=A2C,early_stopping=True)
