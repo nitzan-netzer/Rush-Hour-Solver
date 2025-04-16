@@ -11,7 +11,7 @@ from tqdm import tqdm
 
 import setup_path  # NOQA
 from environments.board_random import BoardRandom
-from environments.board_to_image import (car_colors, save_board_to_image,
+from GUI.board_to_image import (car_colors, save_board_to_image,
                                          truck_colors)
 from environments.calculate_difficulty import calculate_difficulty
 from environments.vehicles import Car, Truck

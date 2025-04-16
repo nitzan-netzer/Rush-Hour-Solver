@@ -3,11 +3,10 @@ import pygame
 import time
 import numpy as np
 import cv2
-
+from utils.config import MODEL_PATH
 from environments.rush_hour_env import RushHourEnv
-from environments.evaluate import evaluate_model
 from stable_baselines3 import PPO
-from environments.board_to_image import letter_to_color
+from GUI.board_to_image import letter_to_color
 # Settings
 TILE_SIZE = 80
 BOARD_SIZE = 6
@@ -46,7 +45,7 @@ def run_visualizer(model_path,record=False, output_video=r"videos\rush_hour_solu
     pygame.display.set_caption("Rush Hour - Agent Demo")
     font = pygame.font.SysFont(None, 36)
 
-    test_env = RushHourEnv(num_of_vehicle=4, train=False)
+    test_env = RushHourEnv(num_of_vehicle=6, train=False)
     model = PPO.load(model_path, env=test_env)
 
     obs, _ = test_env.reset()
@@ -64,7 +63,7 @@ def run_visualizer(model_path,record=False, output_video=r"videos\rush_hour_solu
         frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
         out.write(frame)
 
-    for i in range(100):
+    for i in range(50):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -102,8 +101,8 @@ def run_visualizer(model_path,record=False, output_video=r"videos\rush_hour_solu
         out.release()
         print(f"✅ Video saved to {output_video}")
 
-    # === Automated test loop ===
-    evaluate_model(model,test_env)
+def main():
+    run_visualizer(model_path=MODEL_PATH,record=True)
 
 if __name__ == "__main__":
-    run_visualizer(model_path="models_zip/ppo_rush_hour.zip",record=True)
+   main()

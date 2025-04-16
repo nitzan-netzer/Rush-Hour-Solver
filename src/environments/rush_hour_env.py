@@ -9,24 +9,23 @@ from sklearn.model_selection import train_test_split
 import setup_path  # NOQA
 from environments.board import Board
 from environments.rewards import basic_reward
+import os
 
+def initialize_boards(input_folder="database"):
+    boards = []
 
-def load_config():
-    with open("database/config.json", "r") as f:
-        config = json.load(f)
-    json_boards_path = config.get("path")
-    num_of_vehicle = config.get("num_cars") + config.get("num_trucks") +1
-    vehicles_latter = config.get("vehicles_latter")
-    return json_boards_path, num_of_vehicle, vehicles_latter
+    for file in os.listdir(input_folder):
+        if file.endswith(".json"):
+            json_boards_path = os.path.join(input_folder, file)
+            boards.extend(Board.load_multiple_boards(json_boards_path))
+    
+    train_boards, test_boards = train_test_split(boards, test_size=0.2, random_state=42)
 
+    return train_boards, test_boards
 
 class RushHourEnv(Env):
-    json_boards_path,num_of_vehicle,vehicles_latter =load_config()
-    train_boards, test_boards = train_test_split(
-        Board.load_multiple_boards(json_boards_path),
-        test_size=0.2,
-        random_state=42
-    )
+    train_boards, test_boards = initialize_boards()
+    
     def __init__(self,num_of_vehicle:int ,rewards=basic_reward,train=True): 
         if train:
             self.boards = RushHourEnv.train_boards
@@ -35,14 +34,15 @@ class RushHourEnv(Env):
             self.boards = RushHourEnv.test_boards
             self.max_steps = 100
 
-        self.action_space = spaces.Discrete(self.num_of_vehicle * 4)
+        self.action_space = spaces.Discrete(num_of_vehicle * 4)
         self.observation_space = spaces.Box(
             low=0, high=255, shape=(36,), dtype=np.uint8
         )
         self.state = None
         self.board = None
         self.get_reward = rewards
-       
+        self.vehicles_latter = ["A", "B", "C", "D", "O", "X"] # TODO: make this dynamic
+
     def reset(self,board=None,seed=None):
         if board is None:
             self.board =  deepcopy(choice(self.boards))
@@ -56,8 +56,13 @@ class RushHourEnv(Env):
     def step(self, action):
         vehicle_str, move_str = self.parse_action(action)
         vehicle = self.board.get_vehicle_by_letter(vehicle_str)
-        valid_move = self.board.move_vehicle(vehicle, move_str)
-        done = self.board.game_over()
+        if vehicle is None:
+            valid_move = False
+            done = False
+        else:
+            valid_move = self.board.move_vehicle(vehicle, move_str)
+            done = self.board.game_over()
+        
         self.num_steps += 1
         if self.num_steps >= self.max_steps:
             truncated = True
@@ -86,4 +91,10 @@ class RushHourEnv(Env):
         move_str = ["U", "D", "L", "R"][move]
         vehicle_str = self.vehicles_latter[vehicle]
         return vehicle_str, move_str
-    
+
+if __name__ == "__main__":
+    env = RushHourEnv(num_of_vehicle=6)
+    env.reset()
+    env.render()
+ 
+

@@ -5,7 +5,7 @@ import setup_path # NOQA
 import os
 
 from environments.board import Board
-from environments.board_to_image import save_board_to_image, save_board_to_video
+from GUI.board_to_image import save_board_to_image, save_board_to_video
 from environments.vehicles import Car, Truck
 
 # fmt: off

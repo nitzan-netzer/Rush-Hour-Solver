@@ -5,7 +5,7 @@ from environments.rush_hour_env import RushHourEnv
 from environments.evaluate import evaluate_model
 from stable_baselines3 import PPO
 from stable_baselines3.common.env_checker import check_env
-from logs_utils.custom_logger import RushHourCSVLogger  # for episode logging
+from utils.custom_logger import RushHourCSVLogger  # for episode logging
 
 def train_and_save_model_without(model_path="models/ppo_rush_hour_model_es.zip", log_file="logs/rush_hour/run_latest.csv"):
     """Train and save the PPO model with logging and early stopping."""

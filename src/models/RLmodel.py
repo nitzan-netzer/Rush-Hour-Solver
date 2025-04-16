@@ -5,7 +5,7 @@ from environments.rush_hour_env import RushHourEnv
 from environments.evaluate import evaluate_model
 from stable_baselines3 import PPO
 from stable_baselines3.common.env_checker import check_env
-from logs_utils.custom_logger import RushHourCSVLogger
+from utils.custom_logger import RushHourCSVLogger
 from models.early_stopping import EarlyStoppingSuccessRateCallback
 
 

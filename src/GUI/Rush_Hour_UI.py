@@ -5,9 +5,9 @@ import pygame
 import time
 import random
 from stable_baselines3 import PPO
-from environments.board_to_image import generate_board_image,letter_to_color
+from GUI.board_to_image import generate_board_image,letter_to_color
 from environments.rush_hour_env import RushHourEnv
-
+from utils.config import MODEL_PATH
 # Constants
 TILE_SIZE = 60
 GRID_COLS = 6
@@ -103,7 +103,7 @@ def main():
     font = pygame.font.SysFont(FONT_NAME, 18)
 
     big_font = pygame.font.SysFont(FONT_NAME, 28)
-    model = PPO.load(r"models_zip\ppo_rush_hour.zip")
+    model = PPO.load(MODEL_PATH)
     thumbnails = generate_thumbnails()
 
     # Prepare level button rects

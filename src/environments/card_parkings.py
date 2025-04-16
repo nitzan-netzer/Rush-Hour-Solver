@@ -6,7 +6,7 @@ import setup_path # NOQA
 import os
 
 from environments.board import Board
-from environments.board_to_image import save_board_to_image
+from GUI.board_to_image import save_board_to_image
 from environments.vehicles import Car, Truck
 
 
