@@ -1,4 +1,4 @@
-import setup_path # NOQA
+import setup_path  # NOQA
 
 from gymnasium import Env, spaces
 import numpy as np
@@ -9,13 +9,16 @@ from environments.rewards import basic_reward
 from sklearn.model_selection import train_test_split
 from copy import deepcopy
 
+
 class RushHourEnv(Env):
+    # --- Change DataBase ----
     train_boards, test_boards = train_test_split(
-        Board.load_multiple_boards("database/example-1000.json"),
+        Board.load_multiple_boards("database/1000_cards_3_cars_1_trucks.json"),
         test_size=0.2,
         random_state=42
     )
-    def __init__(self, num_of_vehicle: int,rewards=basic_reward,train=True): 
+
+    def __init__(self, num_of_vehicle: int, rewards=basic_reward, train=True):
         self.num_of_vehicle = num_of_vehicle
         if train:
             self.boards = RushHourEnv.train_boards
@@ -31,16 +34,15 @@ class RushHourEnv(Env):
         self.state = None
         self.board = None
         self.get_reward = rewards
-       
-    def reset(self,board=None,seed=None):
+
+    def reset(self, board=None, seed=None):
         if board is None:
-            self.board =  deepcopy(choice(self.boards))
+            self.board = deepcopy(choice(self.boards))
         else:
             self.board = deepcopy(board)
         self.state = self.board.get_board_flatten().astype(np.uint8)
         self.num_steps = 0
         return self.state, self._get_info()
-    
 
     def step(self, action):
         vehicle_str, move_str = self.parse_action(action)
@@ -53,10 +55,10 @@ class RushHourEnv(Env):
         else:
             truncated = False
 
-        reward = self.get_reward(valid_move,done,truncated)
+        reward = self.get_reward(valid_move, done, truncated)
 
         self.state = self.board.get_board_flatten().astype(np.uint8)
-        return self.state, reward, done,truncated, self._get_info()
+        return self.state, reward, done, truncated, self._get_info()
 
     def render(self):
         print(self.board)
@@ -70,9 +72,10 @@ class RushHourEnv(Env):
         }
 
     def parse_action(self, action):
-        vehicle = action // 4
+        vehicle_idx = action // 4
         move = action % 4
         move_str = ["U", "D", "L", "R"][move]
-        vehicle_str = ["X", "A", "B", "O"][vehicle]
+        # ---- Dynamically pick the letter of the vehicle at that index (self.board.vehicles is a list of Vehicle objects of length num_of_vehicle) ----
+        vehicle_str = self.board.vehicles[vehicle_idx].letter
+
         return vehicle_str, move_str
-    
