@@ -1,8 +1,7 @@
 """
 Generate cards with random vehicles and random moves.
 """
-import setup_path # NOQA
-
+import json
 import os
 import random
 from copy import deepcopy
@@ -10,8 +9,10 @@ from datetime import datetime
 
 from tqdm import tqdm
 
+import setup_path  # NOQA
 from environments.board_random import BoardRandom
-from environments.board_to_image import car_colors, save_board_to_image, truck_colors
+from GUI.board_to_image import (car_colors, save_board_to_image,
+                                         truck_colors)
 from environments.calculate_difficulty import calculate_difficulty
 from environments.vehicles import Car, Truck
 
@@ -32,6 +33,7 @@ def cards_generator(
     num_trucks: int,
     num_step: int,
     threshold: int,
+    shuffle: bool = False
 ):
     """
     Generate cards with random vehicles and random moves.
@@ -40,10 +42,13 @@ def cards_generator(
     """
     boards: list[BoardRandom] = []
     board = BoardRandom()
+    hashset = set()
+
     with tqdm(total=num_cards, desc="Generating Boards") as pbar:
         while len(boards) < num_cards:
             board.reset()
-            shuffle_colors()
+            if shuffle:
+                shuffle_colors()
             failed = False
             for i in range(num_trucks):
                 direction = random.choice(DIRECTIONS)
@@ -63,8 +68,10 @@ def cards_generator(
             # Ensure the red car not win the game immediately
             if not failed:
                 difficulty = calculate_difficulty(board)
-                if difficulty > threshold:
+                board_hash = board.get_hash()
+                if difficulty > threshold and not board_hash in hashset:
                     boards.append(deepcopy(board))
+                    hashset.add(board_hash)
                     pbar.update(1)
 
     return boards
@@ -74,48 +81,46 @@ def save(boards, path, save_images=False):
     """
     Save the board to a JSON file.
     """
-    os.makedirs(path, exist_ok=True)
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")  # Format: YYYYMMDD_HHMMSS
-    filename = rf"{path}/cards_{timestamp}.json"
+    filename = f"{path}.json"
     BoardRandom.save_multiple_boards(boards, filename)
     if save_images:
+        os.makedirs(path, exist_ok=True)
         for i, board in enumerate(boards):
-            save_board_to_image(board, rf"{path}/board-{i}.png")
+            save_board_to_image(board, rf"{
+                path}/board-{i}.png")
+            if i == 10:
+                break
 
 
+def save_config(num_cards:int ,num_cars:int, num_trucks:int,vehicles_letter:list[str]):
+    """
+    Save the configuration to a JSON file.
+    """
+    filename = f"{num_cards}_cards_{num_cars}_cars_{num_trucks}_trucks"
+    path = f"database/{filename}"
+    config_path = f"database/config_{filename}.json"
+    config = {
+        "path": path+".json",
+        "num_cards": num_cards,
+        "num_cars": num_cars,
+        "num_trucks": num_trucks,
+        "vehicles_letter": vehicles_letter,
+    }
+    with open(config_path, "w") as f:
+        json.dump(config, f, indent=4)
+    
+    return path
 def main():
-    """
-    the main function to generate cards.
-    """
-    num_cards = 10
-    difficulty = "easy"
-    match difficulty:
-        case "easy":
-            num_cars = 2
-            num_trucks = 1
-            num_step = 10
-            threshold = 1
-            path = "database/easy"
-            os.makedirs("database/easy", exist_ok=True)
-        case "medium":
-            num_cars = 4
-            num_trucks = 2
-            num_step = 25
-            threshold = 2
-            path = "database/medium"
-        case "hard":
-            num_cars = 6
-            num_trucks = 3
-            num_step = 50
-            threshold = 3
-            path = "database/hard"
-        case _:
-            print("Invalid difficulty")
-            return
-    boards = cards_generator(
-        num_cards, num_cars, num_trucks, num_step, threshold)
-    save(boards, path)
-
+    num_cards = 1000
+    num_trucks = 1
+    num_step = 20
+    threshold = 1
+    for num_cars in range(2, 5):
+        boards = cards_generator(
+            num_cards, num_cars, num_trucks, num_step, threshold)
+        vehicles_letter = boards[0].get_all_vehicles_letter()
+        path = save_config(num_cards, num_cars, num_trucks, vehicles_letter)
+        save(boards, path, save_images=True)    
 
 if __name__ == "__main__":
     main()
