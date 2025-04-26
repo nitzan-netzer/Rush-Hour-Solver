@@ -91,7 +91,7 @@ def save(boards, path, save_images=False):
                 break
 
 
-def save_config(num_cards:int ,num_cars:int, num_trucks:int,vehicles_latter:list[str]):
+def save_config(num_cards:int ,num_cars:int, num_trucks:int,vehicles_letter:list[str]):
     """
     Save the configuration to a JSON file.
     """
@@ -103,7 +103,7 @@ def save_config(num_cards:int ,num_cars:int, num_trucks:int,vehicles_latter:list
         "num_cards": num_cards,
         "num_cars": num_cars,
         "num_trucks": num_trucks,
-        "vehicles_latter": vehicles_latter,
+        "vehicles_letter": vehicles_letter,
     }
     with open(config_path, "w") as f:
         json.dump(config, f, indent=4)
@@ -117,8 +117,8 @@ def main():
     for num_cars in range(2, 5):
         boards = cards_generator(
             num_cards, num_cars, num_trucks, num_step, threshold)
-        vehicles_latter = boards[0].get_all_vehicles_latter()
-        path = save_config(num_cards, num_cars, num_trucks, vehicles_latter)
+        vehicles_letter = boards[0].get_all_vehicles_letter()
+        path = save_config(num_cards, num_cars, num_trucks, vehicles_letter)
         save(boards, path, save_images=True)    
 
 if __name__ == "__main__":

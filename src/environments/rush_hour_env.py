@@ -41,7 +41,7 @@ class RushHourEnv(Env):
         self.state = None
         self.board = None
         self.get_reward = rewards
-        self.vehicles_latter = ["A", "B", "C", "D", "O", "X"] # TODO: make this dynamic
+        self.vehicles_letter = ["A", "B", "C", "D", "O", "X"] # TODO: make this dynamic
 
     def reset(self,board=None,seed=None):
         if board is None:
@@ -89,7 +89,7 @@ class RushHourEnv(Env):
         vehicle = action // 4
         move = action % 4
         move_str = ["U", "D", "L", "R"][move]
-        vehicle_str = self.vehicles_latter[vehicle]
+        vehicle_str = self.vehicles_letter[vehicle]
         return vehicle_str, move_str
 
 if __name__ == "__main__":

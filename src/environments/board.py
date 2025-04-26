@@ -334,7 +334,7 @@ class Board:
         """
         return hash(tuple(self.get_board_flatten()))
     
-    def get_all_vehicles_latter(self):
+    def get_all_vehicles_letter(self):
         """"
         Get all vehicle letters on the board."
         """
