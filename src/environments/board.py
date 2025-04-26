@@ -336,7 +336,7 @@ class Board:
     
     def get_all_vehicles_letter(self):
         """"
-        Get all vehicle letters on the board."
+        Get all vehicle letters on the board.
         """
     
         vehicles_str = [vehicle.letter for vehicle in self.vehicles]

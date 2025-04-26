@@ -15,7 +15,7 @@ def initialize_boards(input_folder="database"):
     boards = []
 
     for file in os.listdir(input_folder):
-        if file.endswith(".json"):
+        if file.endswith(".json") and not file.startswith("_"):
             json_boards_path = os.path.join(input_folder, file)
             boards.extend(Board.load_multiple_boards(json_boards_path))
     
@@ -29,7 +29,7 @@ class RushHourEnv(Env):
     def __init__(self,num_of_vehicle:int ,rewards=basic_reward,train=True): 
         if train:
             self.boards = RushHourEnv.train_boards
-            self.max_steps = 500
+            self.max_steps = 2000 
         else:
             self.boards = RushHourEnv.test_boards
             self.max_steps = 100
@@ -40,8 +40,8 @@ class RushHourEnv(Env):
         )
         self.state = None
         self.board = None
-        self.get_reward = rewards
         self.vehicles_letter = ["A", "B", "C", "D", "O", "X"] # TODO: make this dynamic
+        self.get_reward = rewards
 
     def reset(self,board=None,seed=None):
         if board is None:
@@ -50,6 +50,7 @@ class RushHourEnv(Env):
             self.board = deepcopy(board)
         self.state = self.board.get_board_flatten().astype(np.uint8)
         self.num_steps = 0
+        #self.vehicles_letter = self.board.get_all_vehicles_letter()
         return self.state, self._get_info()
     
 

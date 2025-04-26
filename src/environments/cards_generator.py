@@ -71,6 +71,7 @@ def cards_generator(
                 board_hash = board.get_hash()
                 if difficulty > threshold and not board_hash in hashset:
                     boards.append(deepcopy(board))
+                    hashset.add(board_hash)
                     pbar.update(1)
 
     return boards
