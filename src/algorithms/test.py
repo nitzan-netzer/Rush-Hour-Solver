@@ -14,7 +14,7 @@ def run_and_time(algorithm,card):
     return solution
 
 def main():
-    for i in range(1,6):
+    for i in range(1,8):
         print(f"card{i}:")
         card = Board.load(f"database/original/cards/card{i}.json")
         solution_bfs = run_and_time(bfs,card)
