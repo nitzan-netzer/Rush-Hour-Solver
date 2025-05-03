@@ -1,47 +1,67 @@
+import json
+import os
+from copy import deepcopy
+from random import choice
+
 import numpy as np
 from gymnasium import Env, spaces
-from random import choice
-from copy import deepcopy
+from sklearn.model_selection import train_test_split
+
+import setup_path  # NOQA
 from environments.board import Board
 from GUI.board_to_image import generate_board_image
 
 
+def initialize_boards(input_folder="database"):
+    boards = []
+    for file in os.listdir(input_folder):
+        if file.endswith(".json") and not file.startswith("_"):
+            json_boards_path = os.path.join(input_folder, file)
+            boards.extend(Board.load_multiple_boards(json_boards_path))
+
+    train_boards, test_boards = train_test_split(
+        boards, test_size=0.2, random_state=42)
+    return train_boards, test_boards
+
+
 class RushHourImageEnv(Env):
-    def __init__(self, boards, num_vehicles, image_size=(300, 300)):
-        """
-        Args:
-            boards (list): List of Board objects to sample from.
-            num_vehicles (int): Number of vehicles (determines action space).
-            image_size (tuple): Output image size (width, height).
-        """
+    train_boards, test_boards = initialize_boards()
+
+    def __init__(self, num_of_vehicle: int, image_size=(300, 300), train=True):
         super().__init__()
-        self.boards = boards
-        self.num_vehicles = num_vehicles
+
+        if train:
+            self.boards = RushHourImageEnv.train_boards
+            self.max_steps = 2000
+        else:
+            self.boards = RushHourImageEnv.test_boards
+            self.max_steps = 100
+
         self.image_size = image_size
+        self.num_of_vehicle = num_of_vehicle
 
-        # Action space: num_vehicles * 4 (each vehicle: [U,D,L,R])
-        self.action_space = spaces.Discrete(num_vehicles * 4)
-
-        # Observation space: image (H, W, C) - normalized [0,1]
+        self.action_space = spaces.Discrete(num_of_vehicle * 4)
         self.observation_space = spaces.Box(
-            low=0, high=1, shape=(*image_size, 3), dtype=np.float32)
+            low=0, high=1.0, shape=(*image_size, 3), dtype=np.float32
+        )
 
-        self.board = None
         self.state = None
+        self.board = None
+        self.vehicles_letter = ["A", "B", "C",
+                                "D", "O", "X"]  # TODO: make dynamic
         self.num_steps = 0
-        self.max_steps = 100
 
-        # Vehicles letters (adapt this if needed)
-        self.vehicles_letter = ["A", "B", "C", "D", "O", "X"]
-
-    def reset(self, seed=None, options=None):
-        self.board = deepcopy(choice(self.boards))
+    def reset(self, board=None, seed=None):
+        if board is None:
+            self.board = deepcopy(choice(self.boards))
+        else:
+            self.board = deepcopy(board)
         self.num_steps = 0
         self.state = self._board_to_image(self.board)
         return self.state, self._get_info()
 
     def step(self, action):
-        vehicle_str, move_str = self._parse_action(action)
+        vehicle_str, move_str = self.parse_action(action)
         vehicle = self.board.get_vehicle_by_letter(vehicle_str)
 
         valid_move = False
@@ -67,10 +87,11 @@ class RushHourImageEnv(Env):
         img = generate_board_image(
             board, scale=self.image_size[0] // 6, draw_letters=False)
         img = img.resize(self.image_size)
-        img_array = np.asarray(img).astype(np.float32) / 255.0  # Normalize
+        img_array = np.asarray(img).astype(np.float32) / \
+            255.0  # Normalize to [0,1]
         return img_array
 
-    def _parse_action(self, action):
+    def parse_action(self, action):
         vehicle = action // 4
         move = action % 4
         move_str = ["U", "D", "L", "R"][move]
@@ -78,7 +99,7 @@ class RushHourImageEnv(Env):
         return vehicle_str, move_str
 
     def _compute_reward(self, valid_move, done, truncated):
-        reward = -1  # Encourage shorter solutions
+        reward = -1
         if not valid_move:
             reward -= 5
         if done:
@@ -88,25 +109,16 @@ class RushHourImageEnv(Env):
         return reward
 
     def _get_info(self):
+        non_empty_cells = np.count_nonzero(self.board.board != "")
+        red_car_escaped = self.board.game_over()
         return {
-            "steps": self.num_steps,
+            "non_empty_cells": non_empty_cells,
+            "red_car_escaped": red_car_escaped,
         }
 
 
-# Example usage:
 if __name__ == "__main__":
-    from environments.board import Board
-
-    boards = Board.load_multiple_boards(
-        "database/1000_cards_3_cars_1_trucks.json")
-    env = RushHourImageEnv(boards, num_vehicles=6)
-
-    obs, info = env.reset()
+    env = RushHourImageEnv(num_of_vehicle=6, train=True)
+    obs, _ = env.reset()
     print("Observation shape:", obs.shape)
     env.render()
-
-    for _ in range(5):
-        action = env.action_space.sample()
-        obs, reward, done, truncated, info = env.step(action)
-        print(f"Action: {action}, Reward: {reward}, Done: {done}")
-        env.render()

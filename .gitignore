@@ -1,6 +1,5 @@
 .vscode
 __pycache__
-database
 .coverage
 logs
 models_zip
