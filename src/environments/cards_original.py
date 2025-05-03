@@ -154,6 +154,93 @@ def card7():
             "BL3", "DU1", "EU1", "XR5"]
     return board, sol7
 
+def card8():
+    """
+    Generate the initial setup for Card 8 and provide its solution moves.
+    """
+    board = Board()
+    board.reset(init_red_car=False)
+
+    # Red car (X) — horizontal at row 2, col 1
+    board.add_vehicle(Car("RL", "X"), 2, 0)
+
+    board.add_vehicle(Car("RL", "A"), 0, 3)
+    board.add_vehicle(Car("RL", "B"), 1, 2)
+    board.add_vehicle(Car("UD", "C"), 1, 4)
+    board.add_vehicle(Car("UD", "D"), 2, 2)
+    board.add_vehicle(Car("UD", "E"), 2, 3)
+    board.add_vehicle(Car("RL", "F"), 3, 0)
+    board.add_vehicle(Car("RL", "G"), 3, 4)
+    board.add_vehicle(Car("RL", "H"), 4, 0)
+    board.add_vehicle(Car("UD", "I"), 4, 2)
+    board.add_vehicle(Car("RL", "K"), 5, 0)
+
+    # Trucks
+    board.add_vehicle(Truck("UD", "O"), 0, 5)
+    board.add_vehicle(Truck("RL", "P"), 4, 3)
+    board.add_vehicle(Truck("RL", "Q"), 5, 3)
+
+    sol8 = ["AL3", "CU1", "BL2", "EU2", "DU2", "XR3", "IU2", "QL1",
+            "PL1", "GL1", "OD3", "XR3"]
+    
+    return board, sol8
+def card9():
+    """
+    Generate the initial setup for Card 9 and provide its solution moves.
+    """
+    board = Board()
+    board.reset(init_red_car=False)
+
+    board.add_vehicle(Car("RL", "X"), 2, 0)
+
+    board.add_vehicle(Car("UD", "A"), 0, 1)
+    board.add_vehicle(Car("RL", "B"), 0, 2)
+    board.add_vehicle(Car("RL", "C"), 0, 4)
+    board.add_vehicle(Car("UD", "D"), 1, 3)
+    board.add_vehicle(Car("RL", "E"), 1, 4)
+    board.add_vehicle(Car("UD", "F"), 2, 5)
+    board.add_vehicle(Car("UD", "G"), 4, 2)
+    board.add_vehicle(Car("UD", "H"), 4, 5)
+
+    # Trucks (3-length)
+    board.add_vehicle(Truck("UD", "P"), 3, 0)
+    board.add_vehicle(Truck("RL", "Q"), 3, 1)
+    board.add_vehicle(Truck("UD", "O"), 2, 4)
+
+    sol9 = ["OD1", "XR1", "PU3", "QL1", "DD2", "XR2", "AD1", "EL1",
+            "BL1", "CL1", "FU2", "XR3"]
+    
+    return board, sol9
+
+def card10():
+    """
+    Generate the initial setup for Card 10 and provide its solution moves.
+    """
+    board = Board()
+    board.reset(init_red_car=False)
+
+    board.add_vehicle(Car("RL", "X"), 2, 1)
+
+    board.add_vehicle(Car("RL", "A"), 0, 0)
+    board.add_vehicle(Car("UD", "B"), 0, 2)
+    board.add_vehicle(Car("RL", "C"), 0, 4)
+    board.add_vehicle(Car("RL", "D"), 1, 0)
+    board.add_vehicle(Car("UD", "E"), 4, 3)
+    board.add_vehicle(Car("RL", "F"), 4, 4)
+    board.add_vehicle(Car("RL", "G"), 5, 0)
+    board.add_vehicle(Car("RL", "H"), 5, 4)
+
+    # Trucks
+    board.add_vehicle(Truck("UD", "P"), 2, 0)
+    board.add_vehicle(Truck("RL", "Q"), 3, 1)
+    board.add_vehicle(Truck("UD", "O"), 1, 5)
+
+    sol10 = ["CL1", "OU1", "QR2", "XR2", "BD4", "DR1", "AR1", "PU2",
+            "QL3", "XL2", "EU3", "HL1","FL3","OD3","CR1","EU1","XR5"]
+    
+    return board, sol10
+    
+    
 def get_total_steps(solution):
     total_steps = 0
     for move in solution:
@@ -170,7 +257,7 @@ def main():
     os.makedirs(original_path, exist_ok=True)
     os.makedirs(video_path, exist_ok=True)
 
-    cards = (card1, card2, card3, card4, card5, card6, card7)
+    cards = (card1, card2, card3, card4, card5, card6, card7, card8, card9, card10)
     for card in cards:
             board, sol = card()
             name = card.__name__
@@ -178,7 +265,8 @@ def main():
             card_video_path = video_path + name + "_solution.mp4"
             board.save(card_path.replace(".png", ".json"))
             save_board_to_image(board, card_path, draw_letters=True)
-            save_board_to_video(board, sol, card_video_path, draw_letters=False)
+            save_board_to_video(board, sol, card_video_path, draw_letters=True
+                                )
             print(f"{name} has {get_total_steps(sol)} steps and {len(sol)} moves")
 
 if __name__ == "__main__":
