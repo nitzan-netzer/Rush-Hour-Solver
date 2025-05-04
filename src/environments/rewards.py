@@ -1,4 +1,4 @@
-def basic_reward(state_history, current_state, vehicle, valid_move, done, truncated, board, steps, max_steps=5):
+def basic_reward(valid_move, done, truncated, reward):
     reward -= 1  # Encourage shorter solutions
     if not valid_move:
         reward -= 5

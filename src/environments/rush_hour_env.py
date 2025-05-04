@@ -10,18 +10,7 @@ import setup_path  # NOQA
 from environments.board import Board
 from environments.rewards import basic_reward
 import os
-
-def initialize_boards(input_folder="database"):
-    boards = []
-
-    for file in os.listdir(input_folder):
-        if file.endswith(".json") and not file.startswith("_"):
-            json_boards_path = os.path.join(input_folder, file)
-            boards.extend(Board.load_multiple_boards(json_boards_path))
-    
-    train_boards, test_boards = train_test_split(boards, test_size=0.2, random_state=42)
-
-    return train_boards, test_boards
+from .init_boards_from_database import initialize_boards
 
 class RushHourEnv(Env):
     train_boards, test_boards = initialize_boards()
@@ -42,6 +31,7 @@ class RushHourEnv(Env):
         self.board = None
         self.vehicles_letter = ["A", "B", "C", "D", "O", "X"] # TODO: make this dynamic
         self.get_reward = rewards
+        self.reward = 0
 
     def reset(self,board=None,seed=None):
         if board is None:
@@ -50,6 +40,7 @@ class RushHourEnv(Env):
             self.board = deepcopy(board)
         self.state = self.board.get_board_flatten().astype(np.uint8)
         self.num_steps = 0
+        self.reward = 0
         #self.vehicles_letter = self.board.get_all_vehicles_letter()
         return self.state, self._get_info()
     
@@ -70,10 +61,10 @@ class RushHourEnv(Env):
         else:
             truncated = False
 
-        reward = self.get_reward(valid_move,done,truncated)
+        self.reward = self.get_reward(valid_move,done,truncated, self.reward)
 
         self.state = self.board.get_board_flatten().astype(np.uint8)
-        return self.state, reward, done,truncated, self._get_info()
+        return self.state, self.reward, done,truncated, self._get_info()
 
     def render(self):
         print(self.board)

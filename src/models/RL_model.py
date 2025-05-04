@@ -1,19 +1,29 @@
 import setup_path  # NOQA
+import multiprocessing
+import torch
 from pathlib import Path
 
 from environments.rush_hour_env import RushHourEnv
 from environments.rush_hour_image_env import RushHourImageEnv
 from environments.evaluate import evaluate_model
+
 from stable_baselines3 import PPO, DQN, A2C
 from stable_baselines3.common.env_checker import check_env
+from stable_baselines3.common.env_util import make_vec_env
+
 from utils.custom_logger import RushHourCSVLogger
 from models.early_stopping import EarlyStoppingSuccessRateCallback
 
 from utils.config import MODEL_PATH, LOG_FILE_PATH, NUM_VEHICLES
 
+# Use all CPU cores for PyTorch intra-op threads
+N_CPU = multiprocessing.cpu_count()
+torch.set_num_threads(N_CPU)
+
 
 class RLModel:
-    def __init__(self, model_class, env, model_path, log_file, early_stopping=True, cnn=False):
+    def __init__(self, model_class, env, model_path, log_file,
+                 early_stopping=True, cnn=False):
         self.env = env
         self.model_class = model_class
         self.model_name = model_class.__name__
@@ -23,9 +33,9 @@ class RLModel:
         self.cnn = cnn
         self.setup_logging()
 
-        # === Create model ===
         print(f"🧠 Initializing {self.model_name} model...")
 
+        # Select policy and any CNN-specific kwargs
         if self.cnn and self.model_name == "PPO":
             from models.cnn_policy import RushHourCNN
             from stable_baselines3.common.policies import ActorCriticCnnPolicy
@@ -38,24 +48,40 @@ class RLModel:
             policy = "MlpPolicy"
             policy_kwargs = None
 
+        # Instantiate the RL model
         self.model = model_class(
-            policy, self.env, verbose=1, policy_kwargs=policy_kwargs)
+            policy,
+            self.env,
+            verbose=1,
+            policy_kwargs=policy_kwargs
+        )
 
     def setup_logging(self):
         log_dir = Path(self.log_file).parent
         log_dir.mkdir(parents=True, exist_ok=True)
 
     def train(self):
+        cpu_count = multiprocessing.cpu_count()       
+        print(f"→ multiprocessing.cpu_count() reports {cpu_count} cores")
         csv_logger = RushHourCSVLogger(log_path=self.log_file)
+        callbacks = [csv_logger]
         if self.early_stopping:
-            print("📚 Training the model with early stopping and logging...")
+            print("📚 Training with early stopping and logging...")
             early_stop = EarlyStoppingSuccessRateCallback(
-                window_size=100, success_threshold=0.9)
-            self.model.learn(total_timesteps=50_000, callback=[
-                             csv_logger, early_stop])
+                window_size=100,
+                success_threshold=0.9,
+                verbose=1
+            )
+            callbacks.append(early_stop)
+            total_timesteps = 50_000
         else:
-            print("📚 Training the model without early stopping and logging...")
-            self.model.learn(total_timesteps=300_000, callback=[csv_logger])
+            print("📚 Training without early stopping (logging only)...")
+            total_timesteps = 300_000
+
+        self.model.learn(
+            total_timesteps=total_timesteps,
+            callback=callbacks
+        )
 
     def save(self):
         self.model.save(self.model_path)
@@ -67,22 +93,38 @@ class RLModel:
         evaluate_model(model, test_env, episodes)
 
 
-def run(num_of_vehicle, model_class, early_stopping=False, cnn=False):
+def run(num_of_vehicle,
+        model_class,
+        early_stopping=False,
+        cnn=False):
     print("🚀 Creating training environment...")
 
-    # === Choose environment class based on cnn flag
+    # Vectorized training environment across all CPU cores
     if cnn:
-        train_env = RushHourImageEnv(num_of_vehicle=num_of_vehicle, train=True)
+        train_env = make_vec_env(
+            lambda: RushHourImageEnv(num_of_vehicle=num_of_vehicle, train=True),
+            n_envs=N_CPU
+        )
         test_env = RushHourImageEnv(num_of_vehicle=num_of_vehicle, train=False)
     else:
-        train_env = RushHourEnv(num_of_vehicle=num_of_vehicle, train=True)
+        train_env = make_vec_env(
+            lambda: RushHourEnv(num_of_vehicle=num_of_vehicle, train=True),
+            n_envs=N_CPU
+        )
         test_env = RushHourEnv(num_of_vehicle=num_of_vehicle, train=False)
 
+    # Validate the single-threaded test environment
     check_env(test_env, warn=True)
 
-    model = RLModel(model_class, train_env, model_path=MODEL_PATH,
-                    log_file=LOG_FILE_PATH, early_stopping=early_stopping, cnn=cnn)
-
+    # Initialize, train, save, and evaluate
+    model = RLModel(
+        model_class,
+        train_env,
+        model_path=MODEL_PATH,
+        log_file=LOG_FILE_PATH,
+        early_stopping=early_stopping,
+        cnn=cnn
+    )
     model.train()
     model.save()
     model.evaluate(test_env)
@@ -91,7 +133,13 @@ def run(num_of_vehicle, model_class, early_stopping=False, cnn=False):
 
 
 if __name__ == "__main__":
-    run(num_of_vehicle=NUM_VEHICLES, model_class=PPO,
-        early_stopping=True, cnn=True)
-    # run(num_of_vehicle=NUM_VEHICLES, model_class=DQN, early_stopping=True, cnn=False)
-    # run(num_of_vehicle=NUM_VEHICLES, model_class=A2C, early_stopping=True, cnn=False)
+    # Example: PPO with CNN and early stopping
+    run(
+        num_of_vehicle=NUM_VEHICLES,
+        model_class=PPO,
+        early_stopping=True,
+        cnn=True
+    )
+    # To try other algorithms:
+    # run(NUM_VEHICLES, DQN,      early_stopping=True, cnn=False)
+    # run(NUM_VEHICLES, A2C,      early_stopping=True, cnn=False)

@@ -1,27 +1,15 @@
-import json
-import os
+
 from copy import deepcopy
 from random import choice
 
 import numpy as np
 from gymnasium import Env, spaces
-from sklearn.model_selection import train_test_split
 
 import setup_path  # NOQA
-from environments.board import Board
 from GUI.board_to_image import generate_board_image
+from .init_boards_from_database import initialize_boards
 
 
-def initialize_boards(input_folder="database"):
-    boards = []
-    for file in os.listdir(input_folder):
-        if file.endswith(".json") and not file.startswith("_"):
-            json_boards_path = os.path.join(input_folder, file)
-            boards.extend(Board.load_multiple_boards(json_boards_path))
-
-    train_boards, test_boards = train_test_split(
-        boards, test_size=0.2, random_state=42)
-    return train_boards, test_boards
 
 
 class RushHourImageEnv(Env):
@@ -50,6 +38,7 @@ class RushHourImageEnv(Env):
         self.vehicles_letter = ["A", "B", "C",
                                 "D", "O", "X"]  # TODO: make dynamic
         self.num_steps = 0
+        self.reward = 0
 
     def reset(self, board=None, seed=None):
         if board is None:
@@ -57,6 +46,8 @@ class RushHourImageEnv(Env):
         else:
             self.board = deepcopy(board)
         self.num_steps = 0
+        self.reward = 0
+
         self.state = self._board_to_image(self.board)
         return self.state, self._get_info()
 
@@ -73,10 +64,10 @@ class RushHourImageEnv(Env):
 
         self.num_steps += 1
         truncated = self.num_steps >= self.max_steps
-        reward = self._compute_reward(valid_move, done, truncated)
+        self.reward = self._compute_reward(valid_move, done, truncated, self.reward)
 
         self.state = self._board_to_image(self.board)
-        return self.state, reward, done, truncated, self._get_info()
+        return self.state, self.reward, done, truncated, self._get_info()
 
     def render(self):
         img = generate_board_image(
@@ -98,8 +89,8 @@ class RushHourImageEnv(Env):
         vehicle_str = self.vehicles_letter[vehicle]
         return vehicle_str, move_str
 
-    def _compute_reward(self, valid_move, done, truncated):
-        reward = -1
+    def _compute_reward(self, valid_move, done, truncated, reward):
+        reward -= 1
         if not valid_move:
             reward -= 5
         if done:
