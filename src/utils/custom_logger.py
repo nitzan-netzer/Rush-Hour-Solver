@@ -32,10 +32,9 @@ class RushHourCSVLogger(BaseCallback):
                 writer = csv.writer(file)
                 writer.writerow(
                     [self.episode_count, self.num_timesteps, total_reward, int(escaped)])
-
             # Print optional summary
-            print(
-                f"[Episode {self.episode_count}] Reward: {total_reward:.2f} | Escaped: {escaped}")
+            #print(
+            #    f"[Episode {self.episode_count}] Reward: {total_reward:.2f} | Escaped: {escaped}")
 
             self.episode_count += 1
             self.episode_rewards = []

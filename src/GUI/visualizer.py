@@ -39,13 +39,12 @@ def draw_board(screen, board, font):
     pygame.display.flip()
 
 
-def run_visualizer(model_path,record=False, output_video=r"videos\rush_hour_solution.mp4"):
+def run_visualizer(test_env,model_path,record=False, output_video=r"videos\rush_hour_solution.mp4"):
     pygame.init()
     screen = pygame.display.set_mode((WINDOW_SIZE, WINDOW_SIZE))
     pygame.display.set_caption("Rush Hour - Agent Demo")
     font = pygame.font.SysFont(None, 36)
 
-    test_env = RushHourEnv(num_of_vehicle=6, train=False)
     model = PPO.load(model_path, env=test_env)
 
     obs, _ = test_env.reset()
@@ -53,6 +52,8 @@ def run_visualizer(model_path,record=False, output_video=r"videos\rush_hour_solu
     time.sleep(1)
 
     out = None
+    done = False
+    truncated = False
     if record:
         fourcc = cv2.VideoWriter_fourcc(*"mp4v")
         out = cv2.VideoWriter(output_video, fourcc, 3,
@@ -63,7 +64,7 @@ def run_visualizer(model_path,record=False, output_video=r"videos\rush_hour_solu
         frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
         out.write(frame)
 
-    for i in range(50):
+    while not done and not truncated:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -72,10 +73,9 @@ def run_visualizer(model_path,record=False, output_video=r"videos\rush_hour_solu
                 return
 
         action, _ = model.predict(obs)
-        obs, reward, done, _, _ = test_env.step(action)
-
+        obs, reward, done,truncated, _ = test_env.step(action)
         vehicle_str, move_str = test_env.parse_action(action)
-        print(f"Step {i}: {vehicle_str} → {move_str}, reward: {reward}")
+        print(f"Step {test_env.num_steps}: {vehicle_str} → {move_str}, reward: {reward}")
 
         draw_board(screen, test_env.board, font)
         if record:

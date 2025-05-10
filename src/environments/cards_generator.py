@@ -1,20 +1,19 @@
 """
 Generate cards with random vehicles and random moves.
 """
-import json
 import os
 import random
+import time
 from copy import deepcopy
-from datetime import datetime
 
 from tqdm import tqdm
 
 import setup_path  # NOQA
+from algorithms.ASTAR import get_heuristic
 from environments.board_random import BoardRandom
-from GUI.board_to_image import (car_colors, save_board_to_image,
-                                         truck_colors)
 from environments.calculate_difficulty import calculate_difficulty
 from environments.vehicles import Car, Truck
+from GUI.board_to_image import car_colors, save_board_to_image, truck_colors
 
 DIRECTIONS = ["UD", "RL"]
 
@@ -67,7 +66,8 @@ def cards_generator(
 
             # Ensure the red car not win the game immediately
             if not failed:
-                difficulty = calculate_difficulty(board)
+                #difficulty = calculate_difficulty(board)
+                difficulty = get_heuristic(board)
                 board_hash = board.get_hash()
                 if difficulty > threshold and not board_hash in hashset:
                     boards.append(deepcopy(board))
@@ -92,35 +92,21 @@ def save(boards, path, save_images=False):
                 break
 
 
-def save_config(num_cards:int ,num_cars:int, num_trucks:int,vehicles_letter:list[str]):
-    """
-    Save the configuration to a JSON file.
-    """
-    filename = f"{num_cards}_cards_{num_cars}_cars_{num_trucks}_trucks"
-    path = f"database/{filename}"
-    config_path = f"database/config_{filename}.json"
-    config = {
-        "path": path+".json",
-        "num_cards": num_cards,
-        "num_cars": num_cars,
-        "num_trucks": num_trucks,
-        "vehicles_letter": vehicles_letter,
-    }
-    with open(config_path, "w") as f:
-        json.dump(config, f, indent=4)
-    
-    return path
+
 def main():
-    num_cards = 1000
+    num_cards = 10000
     num_trucks = 1
-    num_step = 20
-    threshold = 1
+    num_step = 50
+    threshold = 4
     for num_cars in range(2, 5):
+        time_start = time.time()
         boards = cards_generator(
-            num_cards, num_cars, num_trucks, num_step, threshold)
-        vehicles_letter = boards[0].get_all_vehicles_letter()
-        path = save_config(num_cards, num_cars, num_trucks, vehicles_letter)
+            num_cards, num_cars, num_trucks, num_step, threshold,shuffle=True)
+        filename = f"{num_cards}_cards_{num_cars}_cars_{num_trucks}_trucks"
+        path = f"database/{filename}"
         save(boards, path, save_images=True)    
+        time_end = time.time()
+        print(f"Time taken: {time_end - time_start} seconds")
 
 if __name__ == "__main__":
     main()

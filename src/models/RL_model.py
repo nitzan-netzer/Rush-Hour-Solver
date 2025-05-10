@@ -22,7 +22,7 @@ class RLModel:
 
         # === Create PPO model ===
         print(f"🧠 Initializing {self.model_name} model...")
-        self.model = model_class("MlpPolicy", self.env, verbose=1)
+        self.model = model_class("MlpPolicy", self.env, verbose=0)
 
     def setup_logging(self):
         # === Setup logging ===
@@ -37,21 +37,21 @@ class RLModel:
 
             early_stop = EarlyStoppingSuccessRateCallback(
                 window_size=100, success_threshold=0.9)
-            self.model.learn(total_timesteps=50_000, callback=[csv_logger, early_stop])
+            self.model.learn(total_timesteps=1_000_000, callback=[csv_logger, early_stop])
 
         else:
             print("📚 Training the model without early stopping and logging...")
-            self.model.learn(total_timesteps=300_000, callback=[csv_logger])
+            self.model.learn(total_timesteps=100_000, callback=[csv_logger])
 
     def save(self):
         self.model.save(self.model_path)
         print(f"💾 Model saved to: {self.model_path}")
     
-    def evaluate(self,test_env,episodes=None):
+    def evaluate(self,env,episodes=None):
         # === Load model for test evaluation ===
-        print("\n🚀 Evaluating on test boards...")
-        model = self.model_class.load(self.model_path, env=test_env)
-        evaluate_model(model,test_env,episodes)
+        model = self.model_class.load(self.model_path, env=env)
+        result = evaluate_model(model,env,num_of_episodes=episodes)
+        return result
 
 def run(num_of_vehicle,model_class,early_stopping=False):
     print("🚀 Creating training environment...")
