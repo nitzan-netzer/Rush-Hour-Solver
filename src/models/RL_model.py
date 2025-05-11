@@ -1,24 +1,25 @@
 import setup_path  # NOQA
-import multiprocessing
 import torch
 from pathlib import Path
 
 from environments.rush_hour_env import RushHourEnv
 from environments.rush_hour_image_env import RushHourImageEnv
 from environments.evaluate import evaluate_model
+# You can change to another reward here
+from environments.rewards import basic_reward
 
 from stable_baselines3 import PPO, DQN, A2C
 from stable_baselines3.common.env_checker import check_env
-from stable_baselines3.common.env_util import make_vec_env
 
 from utils.custom_logger import RushHourCSVLogger
 from models.early_stopping import EarlyStoppingSuccessRateCallback
 
+from models.cnn_policy import RushHourCNN
+from stable_baselines3.common.policies import ActorCriticCnnPolicy
+
 from utils.config import MODEL_PATH, LOG_FILE_PATH, NUM_VEHICLES
 
-# Use all CPU cores for PyTorch intra-op threads
-N_CPU = multiprocessing.cpu_count()
-torch.set_num_threads(N_CPU)
+torch.set_num_threads(1)
 
 
 class RLModel:
@@ -35,20 +36,17 @@ class RLModel:
 
         print(f"🧠 Initializing {self.model_name} model...")
 
-        # Select policy and any CNN-specific kwargs
+        # Select policy and CNN-specific kwargs if needed
         if self.cnn and self.model_name == "PPO":
-            from models.cnn_policy import RushHourCNN
-            from stable_baselines3.common.policies import ActorCriticCnnPolicy
             policy = ActorCriticCnnPolicy
             policy_kwargs = dict(
                 features_extractor_class=RushHourCNN,
-                features_extractor_kwargs=dict(features_dim=256)
+                features_extractor_kwargs=dict(features_dim=128)
             )
         else:
             policy = "MlpPolicy"
             policy_kwargs = None
 
-        # Instantiate the RL model
         self.model = model_class(
             policy,
             self.env,
@@ -61,22 +59,24 @@ class RLModel:
         log_dir.mkdir(parents=True, exist_ok=True)
 
     def train(self):
-        cpu_count = multiprocessing.cpu_count()       
-        print(f"→ multiprocessing.cpu_count() reports {cpu_count} cores")
+        print("📚 Training with memory-safe settings...")
+        if self.cnn:
+            window_size = 100
+        else:
+            window_size = 50
         csv_logger = RushHourCSVLogger(log_path=self.log_file)
         callbacks = [csv_logger]
+
         if self.early_stopping:
-            print("📚 Training with early stopping and logging...")
             early_stop = EarlyStoppingSuccessRateCallback(
-                window_size=100,
+                window_size=window_size,
                 success_threshold=0.9,
                 verbose=1
             )
             callbacks.append(early_stop)
-            total_timesteps = 50_000
+            total_timesteps = 30_000
         else:
-            print("📚 Training without early stopping (logging only)...")
-            total_timesteps = 300_000
+            total_timesteps = 50_000
 
         self.model.learn(
             total_timesteps=total_timesteps,
@@ -93,38 +93,39 @@ class RLModel:
         evaluate_model(model, test_env, episodes)
 
 
-def run(num_of_vehicle,
-        model_class,
-        early_stopping=False,
-        cnn=False):
-    print("🚀 Creating training environment...")
+def run(num_of_vehicle, model_class, early_stopping=False, cnn=False):
+    print("🚀 Creating memory-optimized training environment...")
 
-    # Vectorized training environment across all CPU cores
     if cnn:
-        train_env = make_vec_env(
-            lambda: RushHourImageEnv(num_of_vehicle=num_of_vehicle, train=True),
-            n_envs=N_CPU
+        train_env = RushHourImageEnv(
+            num_of_vehicle=num_of_vehicle, train=True,
+            image_size=(128, 128), rewards=basic_reward
         )
-        test_env = RushHourImageEnv(num_of_vehicle=num_of_vehicle, train=False)
+        test_env = RushHourImageEnv(
+            num_of_vehicle=num_of_vehicle, train=False,
+            image_size=(128, 128), rewards=basic_reward
+        )
     else:
-        train_env = make_vec_env(
-            lambda: RushHourEnv(num_of_vehicle=num_of_vehicle, train=True),
-            n_envs=N_CPU
+        train_env = RushHourEnv(
+            num_of_vehicle=num_of_vehicle, train=True,
+            rewards=basic_reward
         )
-        test_env = RushHourEnv(num_of_vehicle=num_of_vehicle, train=False)
+        test_env = RushHourEnv(
+            num_of_vehicle=num_of_vehicle, train=False,
+            rewards=basic_reward
+        )
 
-    # Validate the single-threaded test environment
     check_env(test_env, warn=True)
 
-    # Initialize, train, save, and evaluate
     model = RLModel(
-        model_class,
-        train_env,
+        model_class=model_class,
+        env=train_env,
         model_path=MODEL_PATH,
         log_file=LOG_FILE_PATH,
         early_stopping=early_stopping,
         cnn=cnn
     )
+
     model.train()
     model.save()
     model.evaluate(test_env)
@@ -140,6 +141,6 @@ if __name__ == "__main__":
         early_stopping=True,
         cnn=True
     )
-    # To try other algorithms:
-    # run(NUM_VEHICLES, DQN,      early_stopping=True, cnn=False)
-    # run(NUM_VEHICLES, A2C,      early_stopping=True, cnn=False)
+    # Try other setups:
+    # run(NUM_VEHICLES, DQN, early_stopping=True, cnn=False)
+    # run(NUM_VEHICLES, A2C, early_stopping=True, cnn=False)
