@@ -1,7 +1,8 @@
 .vscode
 __pycache__
-database
 .coverage
 logs
 models_zip
 videos
+src/ppo_rush_hour_cnn.zip
+ database

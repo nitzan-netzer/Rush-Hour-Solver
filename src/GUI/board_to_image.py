@@ -1,9 +1,11 @@
+
 """
 This module provides functions to generate images and videos from board states.
 """
 import numpy as np
 import imageio.v2 as imageio
 from PIL import Image, ImageDraw, ImageFont
+
 
 car_colors = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K"]
 truck_colors = ["O", "P", "Q", "R"]
