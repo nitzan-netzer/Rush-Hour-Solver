@@ -74,9 +74,12 @@ class RLModel:
                 verbose=1
             )
             callbacks.append(early_stop)
-            total_timesteps = 30_000
-        else:
             total_timesteps = 50_000
+        else:
+            if self.cnn:
+                total_timesteps = 60_000
+            else:
+                total_timesteps = 1_000_000
 
         self.model.learn(
             total_timesteps=total_timesteps,

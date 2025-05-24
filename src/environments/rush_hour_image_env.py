@@ -102,11 +102,6 @@ class RushHourImageEnv(Env):
     def _get_info(self):
         non_empty_cells = np.count_nonzero(self.board.board != "")
         red_car_escaped = self.board.game_over()
-
-        if red_car_escaped:
-            print("\n🏁 Red car escaped! Final board state:")
-            print(self.board)  # Uses Board.__str__()
-
         return {
             "non_empty_cells": non_empty_cells,
             "red_car_escaped": red_car_escaped,

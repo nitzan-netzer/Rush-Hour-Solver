@@ -18,7 +18,7 @@ class RushHourEnv(Env):
     def __init__(self, num_of_vehicle: int, rewards=basic_reward, train=True):
         super().__init__()
         self.boards = RushHourEnv.train_boards if train else RushHourEnv.test_boards
-        self.max_steps = 2000 if train else 5000
+        self.max_steps = 200 if train else 100
 
         self.num_of_vehicle = num_of_vehicle
         self.get_reward = rewards
@@ -30,8 +30,7 @@ class RushHourEnv(Env):
 
         self.state = None
         self.board = None
-        self.vehicles_letter = ["A", "B", "C",
-                                "D", "O", "X"]  # TODO: make dynamic
+        self.vehicles_letter = self.board.get_all_vehicles_letter()
         self.num_steps = 0
         self.state_history = []
 
