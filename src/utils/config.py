@@ -2,6 +2,7 @@ from pathlib import Path
 MODEL_DIR = Path("models_zip/")  # Directory to store models
 LOG_DIR = Path("logs/csv/")  # Directory to store logs
 VIDEO_DIR = Path("logs/videos/")  # Directory to store videos
+LOG_DIR_FIGURES = Path("logs/figures/")  # Directory to store figures
 
 MODEL_PATH = MODEL_DIR / "rush_hour"
 LOG_FILE_PATH = LOG_DIR / "run_latest.csv"

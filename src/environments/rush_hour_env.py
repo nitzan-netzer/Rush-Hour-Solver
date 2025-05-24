@@ -1,4 +1,5 @@
-import json
+import os
+import random
 from copy import deepcopy
 from random import choice
 
@@ -9,7 +10,7 @@ from sklearn.model_selection import train_test_split
 import setup_path  # NOQA
 from environments.board import Board
 from environments.rewards import basic_reward
-import os
+
 
 def initialize_boards(input_folder="database"):
     boards = []
@@ -19,38 +20,53 @@ def initialize_boards(input_folder="database"):
             json_boards_path = os.path.join(input_folder, file)
             boards.extend(Board.load_multiple_boards(json_boards_path))
     
-    train_boards, test_boards = train_test_split(boards, test_size=0.2, random_state=42)
+    return boards
 
-    return train_boards, test_boards
+def initialize_boards_from_file(file_path):
+    boards = Board.load_multiple_boards(file_path)
+    return boards
 
 class RushHourEnv(Env):
-    train_boards, test_boards = initialize_boards()
     
-    def __init__(self,num_of_vehicle:int ,rewards=basic_reward,train=True): 
-        if train:
-            self.boards = RushHourEnv.train_boards
-            self.max_steps = 2000 
+    def __init__(self,num_of_vehicle:int ,rewards=basic_reward,file_path=None): 
+        if file_path is None:
+            self.all_boards = initialize_boards()
+            self.train_boards, self.test_boards = train_test_split(self.all_boards, test_size=0.2, random_state=42)
         else:
-            self.boards = RushHourEnv.test_boards
-            self.max_steps = 100
+            self.all_boards = initialize_boards_from_file(file_path)
+            self._train_boards, self.test_boards = train_test_split(self.all_boards, test_size=0.1, random_state=42)
 
+    
         self.action_space = spaces.Discrete(num_of_vehicle * 4)
         self.observation_space = spaces.Box(
-            low=0, high=255, shape=(36,), dtype=np.uint8
-        )
-        self.state = None
-        self.board = None
-        self.vehicles_letter = ["A", "B", "C", "D", "O", "X"] # TODO: make this dynamic
+            low=0, high=255, shape=(36,), dtype=np.uint8)
         self.get_reward = rewards
 
-    def reset(self,board=None,seed=None):
+    def set_train(self):
+        self.boards = self.train_boards
+        self.max_steps = 1000 
+    
+    def set_test(self):
+        self.boards = self.test_boards
+        self.max_steps = 50
+
+    def update_num_of_boards(self,num_of_boards,random_state=42):
+        random.seed(random_state)
+        boards = random.sample(self._train_boards,num_of_boards)
+        self.train_boards = boards
+        #self.train_boards, self.test_boards = train_test_split(boards, test_size=0.2, random_state=42)
+
+
+
+    def reset(self,board:Board=None,seed=None):
         if board is None:
             self.board =  deepcopy(choice(self.boards))
         else:
             self.board = deepcopy(board)
         self.state = self.board.get_board_flatten().astype(np.uint8)
         self.num_steps = 0
-        #self.vehicles_letter = self.board.get_all_vehicles_letter()
+        self.vehicles_letter = self.board.get_all_vehicles_letter()
+        self.total_reward = 0
         return self.state, self._get_info()
     
 
@@ -71,7 +87,7 @@ class RushHourEnv(Env):
             truncated = False
 
         reward = self.get_reward(valid_move,done,truncated)
-
+        self.total_reward += reward
         self.state = self.board.get_board_flatten().astype(np.uint8)
         return self.state, reward, done,truncated, self._get_info()
 
@@ -84,6 +100,7 @@ class RushHourEnv(Env):
         return {
             "non_empty_cells": non_empty_cells,
             "red_car_escaped": red_car_escaped,  # 🚀 CHANGED
+            "total_reward": self.total_reward
         }
 
     def parse_action(self, action):

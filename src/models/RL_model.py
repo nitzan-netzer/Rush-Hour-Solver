@@ -47,11 +47,11 @@ class RLModel:
         self.model.save(self.model_path)
         print(f"💾 Model saved to: {self.model_path}")
     
-    def evaluate(self,test_env,episodes=None):
+    def evaluate(self,env,episodes=None):
         # === Load model for test evaluation ===
-        print("\n🚀 Evaluating on test boards...")
-        model = self.model_class.load(self.model_path, env=test_env)
-        evaluate_model(model,test_env,episodes)
+        model = self.model_class.load(self.model_path, env=env)
+        result = evaluate_model(model,env,num_of_episodes=episodes)
+        return result
 
 def run(num_of_vehicle,model_class,early_stopping=False):
     print("🚀 Creating training environment...")
