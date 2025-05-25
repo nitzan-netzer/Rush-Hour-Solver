@@ -95,8 +95,6 @@ gym.register(
 if __name__ == "_main_":
     env = gym.make("RushHourEnv-v0")
     state, info = env.reset()
-    env.render()
-    state, info = env.reset()
     print("Initial State:")
     env.render()
     print("Info after reset:", info)
