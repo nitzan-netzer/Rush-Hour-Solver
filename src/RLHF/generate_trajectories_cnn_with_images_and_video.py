@@ -1,100 +1,171 @@
-# Modified `generate_trajectories_cnn_with_images_and_video.py` to align with project structure
-
 import setup_path  # NOQA
 import os
 import json
+from pathlib import Path
+from copy import deepcopy
+import imageio
+import random
 from stable_baselines3 import PPO
 from environments.rush_hour_env import RushHourEnv
-from GUI.board_to_image import save_board_to_video, generate_board_image
-from copy import deepcopy
-from pathlib import Path
-import imageio
+from environments.board import Board
+from GUI.board_to_image import generate_board_image
 
-# =========== CONFIGURATION ===========
-MODEL_PATH = Path("models_zip/PPO_MLP_full_run_1748012332.zip")
-TRAJECTORIES_DIR = Path("database/trajectories_mlp_policy")
-NUM_BOARDS = 20
-SAVE_VIDEO = True
-SCALE = 52  # Ensures 6*scale is divisible by 16 for video compatibility
 
-TRAJECTORIES_DIR.mkdir(parents=True, exist_ok=True)
+class TrajectoryGenerator:
+    def __init__(self,
+                 model_path: Path,
+                 output_dir: Path,
+                 num_boards: int = 20,
+                 scale: int = 52,
+                 max_steps: int = 50,
+                 max_invalid_moves: int = 20,
+                 save_video: bool = True):
+        self.model_path = model_path
+        self.output_dir = output_dir
+        self.num_boards = num_boards
+        self.scale = scale
+        self.max_steps = max_steps
+        self.max_invalid_moves = max_invalid_moves
+        self.save_video = save_video
 
-# =========== LOAD ENVIRONMENT & MODEL ===========
-env = RushHourEnv(num_of_vehicle=6, train=True)
-model = PPO.load(MODEL_PATH)
+        self.env = RushHourEnv(num_of_vehicle=6, train=False)
+        self.model = self.load_model()
+        all_boards = self.env.boards.copy()
+        random.shuffle(all_boards)
 
-# =========== MAIN CODE ===========
-for board_idx, board in enumerate(env.boards[:NUM_BOARDS]):
-    print(f"Generating trajectories for board {board_idx}")
-    for run_idx in range(2):
-        obs, _ = env.reset(board=board)
+        if len(all_boards) < self.num_boards:
+            raise ValueError(
+                f"Not enough boards available. Requested {self.num_boards} but only have {len(all_boards)}")
+        self.boards = all_boards[:self.num_boards]
+        self.output_dir.mkdir(parents=True, exist_ok=True)
+
+    def load_model(self):
+        if not self.model_path.exists():
+            raise FileNotFoundError(f"Model not found at {self.model_path}")
+        print(f"✅ Loaded model from {self.model_path}")
+        return PPO.load(self.model_path)
+
+    def run(self):
+        for board_idx, board in enumerate(self.boards):
+            print(f"\n=== Generating Trajectories for Board {board_idx} ===")
+            board_copy = deepcopy(board)
+
+            self.run_episode(board_idx, 0, board)
+            self.run_episode(board_idx, 1, board_copy)
+
+    def run_episode(self, board_idx: int, run_idx: int, board: Board):
+        obs, _ = self.env.reset(board=board)
         state = deepcopy(obs)
-        done = False
-        truncated = False
         step_data = []
-        video_moves = []
-        env_board = deepcopy(env.board)
+        all_moves = []
         num_steps = 0
+        consecutive_invalid_moves = 0
+        initial_board = deepcopy(self.env.board)
+        last_info = {"red_car_escaped": False}
+        reward = -10
 
-        while not done and not truncated:
-            action, _ = model.predict(state, deterministic=(run_idx == 0))
-            next_state, reward, done, truncated, info = env.step(action)
+        done, truncated = False, False
 
+        while not done and not truncated and num_steps < self.max_steps:
+            if consecutive_invalid_moves >= self.max_invalid_moves:
+                print("⚠️ Too many invalid moves. Aborting run.")
+                break
+
+            action, _ = self.model.predict(state, deterministic=(run_idx == 0))
             vehicle_idx = action // 4
             move_idx = action % 4
             move_str = ["U", "D", "L", "R"][move_idx]
-            vehicle_letter = env.vehicles_letter[vehicle_idx]
-            video_moves.append((vehicle_letter, move_str, "1"))
+            vehicle_letter = None
+            valid_move = False
+            info = {"red_car_escaped": False}
+
+            if vehicle_idx >= len(self.env.vehicles_letter):
+                print(
+                    f"❌ Invalid action {action}: vehicle {vehicle_idx} out of range")
+                reward = -10
+                next_state = state
+                consecutive_invalid_moves += 1
+            else:
+                vehicle_letter = self.env.vehicles_letter[vehicle_idx]
+                next_state, reward, done, truncated, info = self.env.step(
+                    action)
+                valid_move = reward != -1
+                consecutive_invalid_moves = 0 if valid_move else consecutive_invalid_moves + 1
+
+            all_moves.append((vehicle_letter, move_str, valid_move))
 
             step_data.append({
                 "step_num": num_steps,
                 "state": state.tolist(),
                 "action": int(action),
+                "vehicle": vehicle_letter,
+                "move": move_str,
+                "valid": valid_move,
                 "reward": float(reward),
                 "done": bool(done),
                 "truncated": bool(truncated)
             })
 
             state = next_state
+            last_info = info
             num_steps += 1
 
-        red_car_escaped = info.get("red_car_escaped", False)
+        red_car_escaped = last_info.get("red_car_escaped", False)
         print(
-            f"\U0001F3C1 Board {board_idx}, Run {run_idx}: Red car escaped? {'YES' if red_car_escaped else 'NO'}")
-        print(f"Steps taken: {num_steps}")
+            f"Agent {run_idx + 1} {'✅ escaped' if red_car_escaped else '❌ did not escape'} on board {board_idx}")
 
-        json_out = {
+        board_hash = initial_board.get_hash()
+        self.save_trajectory_json(
+            board_idx, run_idx, step_data, board_hash, num_steps, red_car_escaped)
+
+        if self.save_video:
+            self.save_video_mp4(board_idx, run_idx, all_moves, initial_board)
+
+        return board_hash
+
+    def save_trajectory_json(self, board_idx, run_idx, step_data, board_hash, total_steps, red_car_escaped):
+        data = {
             "board_index": board_idx,
             "run_index": run_idx,
             "steps": step_data,
-            "red_car_escaped": red_car_escaped
+            "red_car_escaped": red_car_escaped,
+            "completed": red_car_escaped,
+            "board_hash": board_hash,
+            "total_steps_attempted": total_steps
         }
-
-        json_filename = TRAJECTORIES_DIR / \
+        path = self.output_dir / \
             f"trajectory_{board_idx}_agent{run_idx + 1}.json"
-        with open(json_filename, "w") as f:
-            json.dump(json_out, f, indent=2)
+        with open(path, "w") as f:
+            json.dump(data, f, indent=2)
+        print(f"📄 Trajectory saved: {path}")
 
-        if SAVE_VIDEO:
-            video_filename = TRAJECTORIES_DIR / \
-                f"trajectory_{board_idx}_agent{run_idx + 1}_video.mp4"
-            # Inline video generation with scale control to avoid touching the main image module
-            frames = []
-            img = generate_board_image(
-                env_board, scale=SCALE, draw_letters=False)
-            frames.append(img.copy())
-            for move in video_moves:
-                letter, direction, times = move
-                vehicle = env_board.get_vehicle_by_letter(letter)
-                if vehicle is None:
-                    print(
-                        f"⚠️ Warning: Vehicle '{letter}' not found on board. Skipping move.")
-                    continue
-                for _ in range(int(times)):
-                    env_board.move_vehicle(vehicle, direction)
-                    img = generate_board_image(
-                        env_board, scale=SCALE, draw_letters=False)
-                    frames.append(img.copy())
-            imageio.mimsave(video_filename, [frame.convert(
-                "RGB") for frame in frames], fps=4)
-            print(f"Video saved as {video_filename}")
+    def save_video_mp4(self, board_idx, run_idx, all_moves, initial_board):
+        frames = [generate_board_image(
+            initial_board, scale=self.scale, draw_letters=False)]
+        board = deepcopy(initial_board)
+
+        for letter, direction, valid in all_moves:
+            if not letter:
+                continue
+            vehicle = board.get_vehicle_by_letter(letter)
+            if not vehicle:
+                continue
+            board.move_vehicle(vehicle, direction)
+            frames.append(generate_board_image(
+                board, scale=self.scale, draw_letters=False))
+
+        video_path = self.output_dir / \
+            f"trajectory_{board_idx}_agent{run_idx + 1}_video.mp4"
+        imageio.mimsave(video_path, [f.convert("RGB") for f in frames], fps=4)
+        print(f"🎥 Video saved: {video_path}")
+
+
+if __name__ == "__main__":
+    generator = TrajectoryGenerator(
+        model_path=Path(
+            "models_zip/PPO_MLP_full_run_1748012332_rlhf_finetuned_20250527_144529.zip"),
+        output_dir=Path("database/trajectories_mlp_policy"),
+        num_boards=200,
+        save_video=True
+    )
+    generator.run()

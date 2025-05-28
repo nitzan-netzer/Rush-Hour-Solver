@@ -37,15 +37,9 @@ def per_steps_reward(state_history, current_state, vehicle, valid_move, done, tr
     """
     Rewards solutions that take fewer steps, and penalizes invalid moves.
     """
-    reward = -1 + (1 - steps / max_steps)  # Encourage shorter episodes
-
-    possible_moves = vehicle.get_possible_moves(board) if vehicle else []
-
-    if valid_move not in possible_moves:
-        reward -= 10
-    else:
-        reward += 5
-
+    reward = -1  # Penalize every step
+    if not valid_move:
+        reward -= 5
     if done:
         reward += 1000 - 2 * steps
     if truncated:

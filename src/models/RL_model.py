@@ -6,7 +6,7 @@ from environments.rush_hour_env import RushHourEnv
 from environments.rush_hour_image_env import RushHourImageEnv
 from environments.evaluate import evaluate_model
 # You can change to another reward here
-from environments.rewards import basic_reward
+from environments.rewards import basic_reward, per_steps_reward
 
 from stable_baselines3 import PPO, DQN, A2C
 from stable_baselines3.common.env_checker import check_env
@@ -102,20 +102,20 @@ def run(num_of_vehicle, model_class, early_stopping=False, cnn=False):
     if cnn:
         train_env = RushHourImageEnv(
             num_of_vehicle=num_of_vehicle, train=True,
-            image_size=(128, 128), rewards=basic_reward
+            image_size=(128, 128), rewards=per_steps_reward
         )
         test_env = RushHourImageEnv(
             num_of_vehicle=num_of_vehicle, train=False,
-            image_size=(128, 128), rewards=basic_reward
+            image_size=(128, 128), rewards=per_steps_reward
         )
     else:
         train_env = RushHourEnv(
             num_of_vehicle=num_of_vehicle, train=True,
-            rewards=basic_reward
+            rewards=per_steps_reward
         )
         test_env = RushHourEnv(
             num_of_vehicle=num_of_vehicle, train=False,
-            rewards=basic_reward
+            rewards=per_steps_reward
         )
 
     check_env(test_env, warn=True)
