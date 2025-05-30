@@ -2,11 +2,13 @@
 This module defines the `Board` class, which represents the game board for a rush hour puzzle game.
 The board manages the placement and movement of vehicles, ensuring they follow rules and constraints.
 """
+import setup_path # NOQA
+
 import json
 
 import numpy as np
 
-from vehicles import RedCar, create_vehicle
+from environments.vehicles import RedCar, create_vehicle
 
 
 class Board:
@@ -51,9 +53,9 @@ class Board:
             col (int): The starting column of the vehicle.
         """
         if vehicle.direction == "RL":
-            self.board[row, col : col + vehicle.length] = vehicle.letter
+            self.board[row, col: col + vehicle.length] = vehicle.letter
         else:
-            self.board[row : row + vehicle.length, col] = vehicle.letter
+            self.board[row: row + vehicle.length, col] = vehicle.letter
         vehicle.row = row
         vehicle.col = col
         self.vehicles.append(vehicle)
@@ -85,12 +87,12 @@ class Board:
         if vehicle.direction == "RL":
             if col + vehicle.length > self.col:
                 return False
-            if np.any(self.board[row, col : col + vehicle.length] != ""):
+            if np.any(self.board[row, col: col + vehicle.length] != ""):
                 return False
         else:
             if row + vehicle.length > self.row:
                 return False
-            if np.any(self.board[row : row + vehicle.length, col] != ""):
+            if np.any(self.board[row: row + vehicle.length, col] != ""):
                 return False
 
         return True
@@ -222,7 +224,8 @@ class Board:
         board = Board(row, col, init_red_car=False)
         for vehicle_data in json_board["vehicles"]:
             vehicle = create_vehicle(vehicle_data)
-            board.add_vehicle(vehicle, vehicle_data["row"], vehicle_data["col"])
+            board.add_vehicle(
+                vehicle, vehicle_data["row"], vehicle_data["col"])
 
         return board
 
@@ -321,3 +324,21 @@ class Board:
                 if cell != "":
                     arr[i * self.col + j] = ord(cell)
         return arr
+    
+    def get_hash(self):
+        """
+        Get a hash representation of the board state.
+
+        Returns:
+            int: A hash value representing the board state.
+        """
+        return hash(tuple(self.get_board_flatten()))
+    
+    def get_all_vehicles_letter(self):
+        """"
+        Get all vehicle letters on the board.
+        """
+    
+        vehicles_str = [vehicle.letter for vehicle in self.vehicles]
+        vehicles_str.sort()
+        return vehicles_str

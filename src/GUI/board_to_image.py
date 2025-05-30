@@ -1,9 +1,11 @@
+
 """
 This module provides functions to generate images and videos from board states.
 """
 import numpy as np
-from moviepy.editor import ImageSequenceClip
+import imageio.v2 as imageio
 from PIL import Image, ImageDraw, ImageFont
+
 
 car_colors = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K"]
 truck_colors = ["O", "P", "Q", "R"]
@@ -24,6 +26,7 @@ letter_to_color = {
     "P": (128, 0, 128),  # Purple
     "Q": (0, 0, 255),  # Blue
     "R": (0, 128, 128),  # Teal
+    "": (220, 220, 220),  # Empty space color
 }
 GRAY = (128, 128, 128)
 WHITE = (255, 255, 255)
@@ -72,7 +75,8 @@ def generate_board_image(board, scale: int = 50, draw_letters: bool = False) -> 
                 letter = board.board[r, c]
                 x = c * scale + scale // 2
                 y = r * scale + scale // 2
-                draw.text((x, y), letter, fill=(0, 0, 0), font=font, anchor="mm")
+                draw.text((x, y), letter, fill=(
+                    0, 0, 0), font=font, anchor="mm")
 
     # Highlight the edge to the right of (2, 5) with white color
     edge_row = 2 * scale  # Top of row 2 in pixels
@@ -106,11 +110,12 @@ def save_board_to_video(
 ):
     """
     Generate a video directly from board states without saving intermediate frames.
+    Requires 'imageio' package.
 
     Args:
         board: The board object.
         sol: A list of moves to apply to the board.
-        video_name: Output video file name.
+        video_name: Output video file name (e.g. "output.mp4" or "output.gif").
         draw_letters: Whether to draw letters on the board tiles.
         fps: Frames per second for the output video.
     """
@@ -118,7 +123,7 @@ def save_board_to_video(
 
     # Generate the initial board state as an image
     img = generate_board_image(board, draw_letters=draw_letters)
-    frames.append(img)
+    frames.append(img.copy())
 
     # Apply each move in the solution and capture frames
     for move in sol:
@@ -129,10 +134,10 @@ def save_board_to_video(
         for _ in range(int(times)):
             board.move_vehicle(car, direction)
             img = generate_board_image(board, draw_letters=draw_letters)
-            frames.append(img)
+            frames.append(img.copy())
 
-    # Convert the frames to an ImageSequenceClip
-    clip = ImageSequenceClip([np.array(frame) for frame in frames], fps=fps)
-    clip.write_videofile(video_name, codec="libx264", logger=None)
+    # Convert and save using imageio
+    imageio.mimsave(video_name, [frame.convert("RGB")
+                    for frame in frames], fps=fps)
 
     print(f"Video saved as {video_name}")

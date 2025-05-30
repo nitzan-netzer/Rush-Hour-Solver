@@ -1,11 +1,13 @@
 """
 Generate a board with all vehicles parked in the parking lot.
 """
+import setup_path # NOQA
+
 import os
 
-from board import Board
-from board_to_image import save_board_to_image
-from vehicles import Car, Truck
+from environments.board import Board
+from GUI.board_to_image import save_board_to_image
+from environments.vehicles import Car, Truck
 
 
 def main():
@@ -32,10 +34,12 @@ def main():
 
     path_parking = "database/parking"
     os.makedirs(path_parking, exist_ok=True)
-    path_parking_with_latter = os.path.join(path_parking, "board-with-latter.png")
-    path_parking_without_latter = os.path.join(path_parking, "board-without-latter.png")
-    save_board_to_image(board, path_parking_with_latter, draw_letters=True)
-    save_board_to_image(board, path_parking_without_latter, draw_letters=False)
+    path_parking_with_letter = os.path.join(
+        path_parking, "board-with-letter.png")
+    path_parking_without_letter = os.path.join(
+        path_parking, "board-without-letter.png")
+    save_board_to_image(board, path_parking_with_letter, draw_letters=True)
+    save_board_to_image(board, path_parking_without_letter, draw_letters=False)
 
 
 if __name__ == "__main__":
