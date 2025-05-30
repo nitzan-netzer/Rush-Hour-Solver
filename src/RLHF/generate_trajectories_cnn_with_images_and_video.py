@@ -63,15 +63,19 @@ class TrajectoryGenerator:
         initial_board = deepcopy(self.env.board)
         last_info = {"red_car_escaped": False}
         reward = -10
-
         done, truncated = False, False
+
+        # ✅ Set different random seeds for stochastic behavior
+        seed_offset = 1000 if run_idx == 0 else 2000
+        self.model.set_random_seed(board_idx + seed_offset)
 
         while not done and not truncated and num_steps < self.max_steps:
             if consecutive_invalid_moves >= self.max_invalid_moves:
                 print("⚠️ Too many invalid moves. Aborting run.")
                 break
 
-            action, _ = self.model.predict(state, deterministic=(run_idx == 0))
+            # ✅ Always sample stochastically for both agents
+            action, _ = self.model.predict(state, deterministic=False)
             vehicle_idx = action // 4
             move_idx = action % 4
             move_str = ["U", "D", "L", "R"][move_idx]
@@ -80,8 +84,6 @@ class TrajectoryGenerator:
             info = {"red_car_escaped": False}
 
             if vehicle_idx >= len(self.env.vehicles_letter):
-                print(
-                    f"❌ Invalid action {action}: vehicle {vehicle_idx} out of range")
                 reward = -10
                 next_state = state
                 consecutive_invalid_moves += 1
@@ -163,7 +165,7 @@ class TrajectoryGenerator:
 if __name__ == "__main__":
     generator = TrajectoryGenerator(
         model_path=Path(
-            "models_zip/PPO_MLP_full_run_1748012332_rlhf_finetuned_20250527_144529.zip"),
+            "models_zip/PPO_MLP_full_run_1748520249.zip"),
         output_dir=Path("database/trajectories_mlp_policy"),
         num_boards=200,
         save_video=True

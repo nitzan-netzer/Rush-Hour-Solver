@@ -79,7 +79,7 @@ class RLModel:
             if self.cnn:
                 total_timesteps = 60_000
             else:
-                total_timesteps = 1_000_000
+                total_timesteps = 500_000
 
         self.model.learn(
             total_timesteps=total_timesteps,

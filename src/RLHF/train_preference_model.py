@@ -55,10 +55,12 @@ def load_comparisons():
 
 
 def create_model(input_dim):
-    """Create a simple feedforward network that outputs a scalar preference score."""
     input_layer = layers.Input(shape=(input_dim + 1,))
-    x = layers.Dense(64, activation='relu')(input_layer)
-    output = layers.Dense(1)(x)  # Output is a logit (raw score)
+    x = layers.Dense(256, activation='relu')(input_layer)
+    x = layers.Dense(128, activation='relu')(x)
+    x = layers.Dense(64, activation='relu')(x)
+    x = layers.Dense(32, activation='relu')(x)
+    output = layers.Dense(1)(x)
     return models.Model(inputs=input_layer, outputs=output)
 
 
