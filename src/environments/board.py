@@ -297,7 +297,7 @@ class Board:
             json.dump(json_boards, file)
 
     @staticmethod
-    def load_multiple_boards(filename: str,func=None):
+    def load_multiple_boards(filename: str):
         """
         Loads multiple board states from a file.
 
@@ -307,7 +307,7 @@ class Board:
         with open(filename, "r") as file:
             json_boards = json.load(file)
 
-        return [Board.from_dict(json_board,func=func) for json_board in json_boards]
+        return [Board.from_dict(json_board) for json_board in json_boards]
 
     def __eq__(self, other):
         """

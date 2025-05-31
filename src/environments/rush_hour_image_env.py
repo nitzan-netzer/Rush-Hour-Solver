@@ -30,14 +30,14 @@ class RushHourImageEnv(Env):
 
         self.state = None
         self.board = None
-        self.vehicles_letter = ["A", "B", "C",
-                                "D", "O", "X"]  # TODO: make dynamic
+        self.vehicles_letter = None
         self.num_steps = 0
         self.state_history = []
 
     def reset(self, board=None, seed=None):
         self.board = deepcopy(
             choice(self.boards)) if board is None else deepcopy(board)
+        self.vehicles_letter = self.board.get_all_vehicles_letter()
         self.num_steps = 0
         self.state_history = []
 
