@@ -96,7 +96,10 @@ class RushHourImageEnv(Env):
         vehicle = action // 4
         move = action % 4
         move_str = ["U", "D", "L", "R"][move]
-        vehicle_str = self.vehicles_letter[vehicle]
+        try:
+            vehicle_str = self.vehicles_letter[vehicle]
+        except IndexError: # if send wrong num_of_vehicle 
+            return None, None
         return vehicle_str, move_str
 
     def _get_info(self):
