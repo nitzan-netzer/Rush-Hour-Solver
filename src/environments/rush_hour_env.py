@@ -9,7 +9,7 @@ from sklearn.model_selection import train_test_split
 import setup_path  # NOQA
 from environments.board import Board
 from environments.rewards import basic_reward
-from .init_boards_from_database import initialize_boards
+from environments.init_boards_from_database import initialize_boards
 
 
 class RushHourEnv(Env):
@@ -30,14 +30,14 @@ class RushHourEnv(Env):
 
         self.state = None
         self.board = None
-        self.vehicles_letter = ["A", "B", "C",
-                                "D", "O", "X"]  # TODO: make dynamic
+        self.vehicles_letter = None
         self.num_steps = 0
         self.state_history = []
 
     def reset(self, board=None, seed=None):
         self.board = deepcopy(
             choice(self.boards)) if board is None else deepcopy(board)
+        self.vehicles_letter = self.board.get_all_vehicles_letter()
         self.num_steps = 0
         self.state = self.board.get_board_flatten().astype(np.uint8)
         self.state_history = [tuple(self.state)]  # For no-repetition reward
@@ -91,7 +91,10 @@ class RushHourEnv(Env):
         vehicle = action // 4
         move = action % 4
         move_str = ["U", "D", "L", "R"][move]
-        vehicle_str = self.vehicles_letter[vehicle]
+        try:
+            vehicle_str = self.vehicles_letter[vehicle]
+        except IndexError: # if send wrong num_of_vehicle 
+            return None, None
         return vehicle_str, move_str
 
 
