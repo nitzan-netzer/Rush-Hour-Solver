@@ -9,7 +9,7 @@ from sklearn.model_selection import train_test_split
 import setup_path  # NOQA
 from environments.board import Board
 from environments.rewards import basic_reward
-from .init_boards_from_database import initialize_boards
+from environments.init_boards_from_database import initialize_boards
 
 
 class RushHourEnv(Env):

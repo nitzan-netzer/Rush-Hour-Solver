@@ -1,10 +1,7 @@
-from environments.cards_original import get_total_steps
 
-def print_solution(solution):
+def get_solution(solution):
     """
-    Print the solution path in a readable format.
-    Args:
-        solution: List of tuples containing (vehicle_letter, move_direction)
+    Get the solution path in a readable format.
     """
     solution_original = []
     if not solution:
@@ -21,8 +18,26 @@ def print_solution(solution):
             count += 1
         solution_original.append(f"{current_move[0]}{current_move[1]}{count}")
         i += count
+    return solution_original
+
+def get_total_steps(solution_original):
+    total_steps = 0
+    for move in solution_original:
+        total_steps += int(move[2])
+    return total_steps
+
+def get_total_moves(solution_original):
+    return len(solution_original)
+
+def print_solution(solution):
+    """
+    Print the solution path in a readable format.
+    Args:
+        solution: List of tuples containing (vehicle_letter, move_direction)
+    """
+    solution_original = get_solution(solution)
     print(f"Total steps: {get_total_steps(solution_original)}")
-    print(f"Total moves: {len(solution_original)}")
+    print(f"Total moves: {get_total_moves(solution_original)}")
     print(solution_original)
 
 

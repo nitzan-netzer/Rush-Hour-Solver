@@ -9,8 +9,7 @@ import json
 import numpy as np
 
 from environments.vehicles import RedCar, create_vehicle
-
-
+from algorithms.utils import get_solution,get_total_steps
 class Board:
     """
     Represents the game board for the vehicle puzzle game.
@@ -42,6 +41,18 @@ class Board:
         self.board = np.empty((self.row, self.col), dtype=str)
         if init_red_car:
             self.add_vehicle(RedCar(), 2, 4)
+        
+        self.is_updated = False
+        self.min_steps = 0
+        self.heuristic = 0
+
+    def update_heuristic_and_min_steps(self,func):
+        if not self.is_updated:
+            solution = func(self)
+            solution_original = get_solution(solution)
+            self.heuristic = self.get_heuristic()
+            self.min_steps = get_total_steps(solution_original)
+            self.is_updated = True
 
     def add_vehicle(self, vehicle, row: int, col: int):
         """
@@ -59,6 +70,8 @@ class Board:
         vehicle.row = row
         vehicle.col = col
         self.vehicles.append(vehicle)
+        self.is_updated = False
+
 
     def check_add_vehicle(self, vehicle, row: int, col: int, uniqueness=False):
         """
@@ -132,6 +145,7 @@ class Board:
                 self.board[
                     vehicle.row + vehicle.length - 1, vehicle.col
                 ] = vehicle.letter
+        self.is_updated = False
         return True
 
     def empty_space(self, row: int, col: int) -> bool:
@@ -197,7 +211,14 @@ class Board:
         Returns:
             dict: The board state as a dictionary.
         """
-        json_board: dict = {"row": self.row, "col": self.col, "vehicles": []}
+        json_board: dict = {
+            "row": self.row, 
+            "col": self.col,
+            "heuristic": self.heuristic, 
+            "min_steps": self.min_steps,
+            "is_updated": self.is_updated,
+            "vehicles": []
+        }
         for vehicle in self.vehicles:
             json_board["vehicles"].append(
                 {
@@ -206,6 +227,7 @@ class Board:
                     "row": vehicle.row,
                     "col": vehicle.col,
                     "direction": vehicle.direction,
+                 
                 }
             )
 
@@ -226,7 +248,15 @@ class Board:
             vehicle = create_vehicle(vehicle_data)
             board.add_vehicle(
                 vehicle, vehicle_data["row"], vehicle_data["col"])
-
+            
+        if "heuristic" in json_board:
+            board.heuristic = json_board["heuristic"]
+            board.min_steps = json_board["min_steps"]
+            board.is_updated = json_board["is_updated"]
+        else:
+            board.is_updated = False
+            board.min_steps = 0
+            board.heuristic = 0
         return board
 
     def save(self, filename: str):
@@ -267,7 +297,7 @@ class Board:
             json.dump(json_boards, file)
 
     @staticmethod
-    def load_multiple_boards(filename: str):
+    def load_multiple_boards(filename: str,func=None):
         """
         Loads multiple board states from a file.
 
@@ -277,7 +307,7 @@ class Board:
         with open(filename, "r") as file:
             json_boards = json.load(file)
 
-        return [Board.from_dict(json_board) for json_board in json_boards]
+        return [Board.from_dict(json_board,func=func) for json_board in json_boards]
 
     def __eq__(self, other):
         """
@@ -342,3 +372,27 @@ class Board:
         vehicles_str = [vehicle.letter for vehicle in self.vehicles]
         vehicles_str.sort()
         return vehicles_str
+
+    def get_heuristic(self) -> int:
+        """
+        Calculate the heuristic value for the current board state.
+        The heuristic is based on:
+        1. Distance of red car from exit
+        2. Number of blocking vehicles
+        3. Number of moves needed to clear blocking vehicles
+        """
+        red_car = self.get_vehicle_by_letter("X")
+        if not red_car:
+            return float('inf')
+        
+        # Distance from red car to exit (column 5)
+        distance_to_exit = 5 - (red_car.col + red_car.length)
+    
+        # Count blocking vehicles
+        blocking_vehicles = 0
+        for col in range(red_car.col + red_car.length, 6):
+            if self.board[red_car.row, col] != "":
+                blocking_vehicles += 1
+        
+        # Each blocking vehicle needs at least one move to clear
+        return distance_to_exit + blocking_vehicles 

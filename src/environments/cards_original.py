@@ -7,7 +7,7 @@ import os
 from environments.board import Board
 from GUI.board_to_image import save_board_to_image, save_board_to_video
 from environments.vehicles import Car, Truck
-
+from algorithms.utils import get_total_steps
 
 
 def card1():
@@ -240,12 +240,6 @@ def card10():
     
     return board, sol10
     
-    
-def get_total_steps(solution):
-    total_steps = 0
-    for move in solution:
-        total_steps += int(move[2])
-    return total_steps
 
 def main():
     """
