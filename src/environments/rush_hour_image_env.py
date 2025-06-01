@@ -6,18 +6,18 @@ from gymnasium import Env, spaces
 
 import setup_path  # NOQA
 from GUI.board_to_image import generate_board_image
-from environments.init_boards_from_database import initialize_boards
+from environments.init_boards_from_database import initialize_boards, load_specific_board_file
 from environments.rewards import basic_reward  # Import your reward function
 
 
 class RushHourImageEnv(Env):
-    train_boards, test_boards = initialize_boards()
+    train_boards, test_boards = load_specific_board_file()
 
     def __init__(self, num_of_vehicle: int, image_size=(84, 84), train=True, rewards=basic_reward):
         super().__init__()
 
         self.boards = RushHourImageEnv.train_boards if train else RushHourImageEnv.test_boards
-        self.max_steps = 2000 if train else 500
+        self.max_steps = 200 if train else 100
 
         self.image_size = image_size
         self.num_of_vehicle = num_of_vehicle
@@ -30,10 +30,11 @@ class RushHourImageEnv(Env):
 
         self.state = None
         self.board = None
-        self.vehicles_letter = ["A", "B", "C",
-                                "D", "O", "X"]  # TODO: make dynamic
+        self.vehicles_letter = sorted(
+            list({v.letter for b in self.boards for v in b.vehicles}))
         self.num_steps = 0
         self.state_history = []
+        print(f"num_vehicles: {self.num_of_vehicle}")
 
     def reset(self, board=None, seed=None):
         self.board = deepcopy(
@@ -77,7 +78,7 @@ class RushHourImageEnv(Env):
 
         self.state = current_state
         self.state_history.append(tuple(current_state.flatten()))
-
+        # print(f"step: {self.num_steps}, reward: {reward}")
         return self.state, reward, done, truncated, self._get_info()
 
     def render(self):
@@ -90,6 +91,7 @@ class RushHourImageEnv(Env):
             board, scale=self.image_size[0] // 6, draw_letters=False)
         img = img.resize(self.image_size)
         img_array = np.asarray(img).astype(np.float32) / 255.0
+        img_array = np.clip(img_array, 0, 1)
         return img_array
 
     def parse_action(self, action):

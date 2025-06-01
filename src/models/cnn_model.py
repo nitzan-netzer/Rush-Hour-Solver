@@ -1,61 +1,67 @@
-import setup_path  # NOQA
+import setup_path  # Ensure src is in path
 
+from pathlib import Path
 from stable_baselines3 import PPO
-from stable_baselines3.common.env_checker import check_env
-from stable_baselines3.common.torch_layers import NatureCNN
-from stable_baselines3.common.utils import set_random_seed
-from cnn_policy import RushHourCNN
 from environments.rush_hour_image_env import RushHourImageEnv
-from environments.board import Board
-from gymnasium.wrappers import NormalizeObservation
-from stable_baselines3.common.policies import ActorCriticCnnPolicy
-from stable_baselines3.common.env_util import make_vec_env
-
-import torch as th
-
-# 1. Load boards
-boards = Board.load_multiple_boards("database/1000_cards_3_cars_1_trucks.json")
-
-# 2. Define Environment
+from environments.rush_hour_env import RushHourEnv
+from environments.rewards import basic_reward
+from models.RL_model import RLModel
+from utils.config import MODEL_DIR, LOG_DIR, NUM_VEHICLES
 
 
-def make_env(seed=0):
-    env = RushHourImageEnv(boards, num_vehicles=6)
-    env.reset()
-    env.action_space.seed(seed)
-    return env
+def train_single_cnn_model(
+    model_class=PPO,
+    use_cnn=True,
+    early_stopping=True,
+    run_name="cnn_standalone"
+):
+    model_type = "CNN" if use_cnn else "MLP"
+    stop_type = "early" if early_stopping else "full"
+    model_filename = f"{model_class.__name__}_{model_type}_{stop_type}_{run_name}.zip"
+    model_path = MODEL_DIR / model_filename
+    log_file = LOG_DIR / f"{model_filename}.csv"
+
+    MODEL_DIR.mkdir(parents=True, exist_ok=True)
+    LOG_DIR.mkdir(parents=True, exist_ok=True)
+
+    if use_cnn:
+        env = RushHourImageEnv(
+            num_of_vehicle=NUM_VEHICLES,
+            train=True,
+            rewards=basic_reward,
+            image_size=(64, 64)  # Lower resolution saves memory
+        )
+    else:
+        env = RushHourEnv(
+            num_of_vehicle=NUM_VEHICLES,
+            train=True,
+            rewards=basic_reward
+        )
+
+    model = RLModel(
+        model_class=model_class,
+        env=env,
+        model_path=model_path,
+        log_file=log_file,
+        early_stopping=early_stopping,
+        cnn=use_cnn
+    )
+
+    model.train()
+    model.save()
+
+    # Evaluation
+    test_env = RushHourImageEnv(NUM_VEHICLES, train=False, rewards=basic_reward, image_size=(64, 64)) \
+        if use_cnn else RushHourEnv(NUM_VEHICLES, train=False, rewards=basic_reward)
+
+    model.evaluate(test_env)
+    return model_path, log_file
 
 
-# Vectorized env for stability
-vec_env = make_vec_env(make_env, n_envs=4)
-
-# 3. Define Custom Policy
-policy_kwargs = dict(
-    features_extractor_class=RushHourCNN,
-    features_extractor_kwargs=dict(features_dim=256)
-)
-
-# 4. Initialize PPO Model
-model = PPO(
-    policy=ActorCriticCnnPolicy,
-    env=vec_env,
-    learning_rate=2.5e-4,
-    n_steps=512,
-    batch_size=64,
-    n_epochs=4,
-    gamma=0.99,
-    policy_kwargs=policy_kwargs,
-    verbose=1,
-    device="auto"
-)
-
-# 5. Train
-model.learn(total_timesteps=100_000)
-model.save("ppo_rush_hour_cnn")
-
-# 6. Test
-obs = vec_env.reset()
-for _ in range(10):
-    action, _ = model.predict(obs)
-    obs, rewards, dones, infos = vec_env.step(action)
-    vec_env.render("human")
+if __name__ == "__main__":
+    train_single_cnn_model(
+        model_class=PPO,
+        use_cnn=True,
+        early_stopping=True,
+        run_name="cnn_standalone"
+    )

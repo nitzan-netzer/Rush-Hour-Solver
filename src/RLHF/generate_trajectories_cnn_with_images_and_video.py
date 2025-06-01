@@ -9,6 +9,7 @@ from stable_baselines3 import PPO
 from environments.rush_hour_env import RushHourEnv
 from environments.board import Board
 from GUI.board_to_image import generate_board_image
+from utils.config import NUM_VEHICLES
 
 
 class TrajectoryGenerator:
@@ -28,7 +29,7 @@ class TrajectoryGenerator:
         self.max_invalid_moves = max_invalid_moves
         self.save_video = save_video
 
-        self.env = RushHourEnv(num_of_vehicle=6, train=False)
+        self.env = RushHourEnv(num_of_vehicle=NUM_VEHICLES, train=False)
         self.model = self.load_model()
         all_boards = self.env.boards.copy()
         random.shuffle(all_boards)
@@ -165,7 +166,7 @@ class TrajectoryGenerator:
 if __name__ == "__main__":
     generator = TrajectoryGenerator(
         model_path=Path(
-            "models_zip/PPO_MLP_full_run_1748520249.zip"),
+            "models_zip/PPO_MLP_full_run_1748637856.zip"),
         output_dir=Path("database/trajectories_mlp_policy"),
         num_boards=200,
         save_video=True

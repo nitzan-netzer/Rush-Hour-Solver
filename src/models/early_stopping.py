@@ -11,7 +11,7 @@ class EarlyStoppingSuccessRateCallback(BaseCallback):
 
     def _on_step(self) -> bool:
         done = self.locals["dones"][0]
-        info = self.locals["infos"][0]
+        info = self.locals.get("infos", [{}])[0]
 
         if done:
             escaped = info.get("red_car_escaped", False)
@@ -19,11 +19,10 @@ class EarlyStoppingSuccessRateCallback(BaseCallback):
 
             if len(self.success_history) == self.window_size:
                 success_rate = sum(self.success_history) / self.window_size
-                if self.verbose:
-                    print(
-                        f"✅ Success rate (last {self.window_size} episodes): {success_rate:.2f}")
+                print(
+                    f"✅ Success rate (last {self.window_size} episodes): {success_rate:.2f}")
                 if success_rate >= self.success_threshold:
-                    print("🛑 Early stopping: success rate threshold reached!")
+                    print("🛑 Early stopping triggered.")
                     return False  # Stop training
 
         return True

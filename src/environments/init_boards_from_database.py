@@ -18,7 +18,7 @@ def initialize_boards(input_folder="database"):
     return train_test_split(boards, test_size=0.2, random_state=42)
 
 
-def load_specific_board_file(filename="1000_cards_2_cars_1_trucks.json", input_folder="database"):
+def load_specific_board_file(filename="1000_cards_4_cars_1_trucks.json", input_folder="database"):
     """
     Load a specific board JSON file and return a train/test split.
     """

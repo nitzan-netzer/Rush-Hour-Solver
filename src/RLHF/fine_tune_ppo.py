@@ -10,6 +10,7 @@ from utils.config import VIDEO_DIR, LOG_FILE_PATH
 from utils.custom_logger import RushHourCSVLogger
 from environments.evaluate import evaluate_model
 from utils.analyze_logs import analyze_logs  # ✅ Import log analyzer
+from utils.config import NUM_VEHICLES
 
 
 class RLHFFineTuner:
@@ -22,8 +23,8 @@ class RLHFFineTuner:
             f"PPO_RLHF_finetuned_{self.timestamp}.csv"
         self.model_save_path = f"models_zip/PPO_MLP_full_run_rlhf_finetuned_{self.timestamp}"
 
-        self.env = RushHourEnv(num_of_vehicle=6, train=True)
-        self.test_env = RushHourEnv(num_of_vehicle=6, train=False)
+        self.env = RushHourEnv(num_of_vehicle=NUM_VEHICLES, train=True)
+        self.test_env = RushHourEnv(num_of_vehicle=NUM_VEHICLES, train=False)
         self.wrapped_env = PreferenceRewardWrapper(self.env, reward_model_path)
 
         self.model = PPO.load(base_model_path, env=self.wrapped_env)
@@ -54,11 +55,11 @@ class RLHFFineTuner:
 
 
 if __name__ == "__main__":
-    base_model_path = "models_zip/PPO_MLP_full_run_1748096948.zip"
-    reward_model_path = "models_zip/preference_model_20250528_200605.keras"
+    base_model_path = "models_zip/PPO_MLP_full_run_1748637856.zip"
+    reward_model_path = "models_zip/preference_model_20250531_164021.keras"
     tuner = RLHFFineTuner(base_model_path, reward_model_path, LOG_FILE_PATH)
 
     tuner.train(timesteps=1_000_000)
-    tuner.evaluate(episodes=100)
+    tuner.evaluate(episodes=200)
     tuner.analyze_logs()
     tuner.record_video()

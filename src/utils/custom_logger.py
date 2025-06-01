@@ -24,16 +24,18 @@ class RushHourCSVLogger(BaseCallback):
 
         if done:
             total_reward = sum(self.episode_rewards)
-            info = self.locals["infos"][0]
+            info = self.locals.get("infos", [{}])[0]
             escaped = info.get("red_car_escaped", False)
 
             # Log to CSV
-            with open(self.log_path, mode='a', newline='') as file:
-                writer = csv.writer(file)
-                writer.writerow(
-                    [self.episode_count, self.num_timesteps, total_reward, int(escaped)])
+            try:
+                with open(self.log_path, mode='a', newline='') as file:
+                    writer = csv.writer(file)
+                    writer.writerow(
+                        [self.episode_count, self.num_timesteps, total_reward, int(escaped)])
+            except Exception as e:
+                print(f"❌ Failed to write log: {e}")
 
-            # Print optional summary
             print(
                 f"[Episode {self.episode_count}] Reward: {total_reward:.2f} | Escaped: {escaped}")
 

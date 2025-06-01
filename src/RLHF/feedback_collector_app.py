@@ -3,7 +3,6 @@ import os
 import json
 from pathlib import Path
 from collections import defaultdict
-import random
 
 TRAJ_DIR = Path("database/trajectories_mlp_policy")
 OUTPUT_FILE = "feedback_pairwise.json"
@@ -50,7 +49,6 @@ def load_actions(file_path):
     try:
         with open(file_path, 'r') as f:
             data = json.load(f)
-
         actions = []
         for step in data.get("steps", []):
             action_num = step.get("action")
@@ -102,9 +100,8 @@ st.progress(progress)
 
 if st.session_state.index >= len(pairs):
     st.success("✅ All comparisons completed!")
-
-    # Show summary of completed comparisons
     st.subheader("Summary of Completed Comparisons")
+
     results_df = defaultdict(lambda: {"agent1_wins": 0, "agent2_wins": 0})
     for result in st.session_state.results:
         board_id = result["trajectory_A"].split("_")[1]
@@ -125,57 +122,56 @@ if st.session_state.index >= len(pairs):
             st.session_state.results, indent=2))
     st.stop()
 
-# Display current comparison
-current_board = board_ids[st.session_state.index]
-st.subheader(
-    f"🎮 Board {current_board} - Comparison {st.session_state.index + 1} of {len(pairs)}")
-
+# Load next comparison
 fileA, fileB = pairs[st.session_state.index]
 pathA = TRAJ_DIR / fileA
 pathB = TRAJ_DIR / fileB
-videoA = get_video_bytes(pathA.with_name(pathA.stem + "_video.mp4"))
-videoB = get_video_bytes(pathB.with_name(pathB.stem + "_video.mp4"))
+
 actionsA = load_actions(pathA)
 actionsB = load_actions(pathB)
+
+lenA = len(actionsA)
+lenB = len(actionsB)
+
+# Auto-resolve if different move lengths
+if lenA != lenB:
+    winner = fileA if lenA < lenB else fileB
+    st.session_state.results.append({
+        "trajectory_A": fileA,
+        "trajectory_B": fileB,
+        "preferred": winner
+    })
+    st.session_state.index += 1
+    st.experimental_rerun()
+
+# === UI DISPLAY ONLY IF lengths are equal ===
+
+videoA = get_video_bytes(pathA.with_name(pathA.stem + "_video.mp4"))
+videoB = get_video_bytes(pathB.with_name(pathB.stem + "_video.mp4"))
+
+st.subheader(
+    f"🎮 Board {board_ids[st.session_state.index]} - Comparison {st.session_state.index + 1} of {len(pairs)}")
 
 col1, col2 = st.columns(2)
 with col1:
     st.markdown(f"### Trajectory A\n**File:** {fileA}")
     if videoA:
         st.markdown(
-            """
-            <style>
-            .stVideo {
-                width: 100%;
-                max-width: 400px;
-            }
-            </style>
-            """,
-            unsafe_allow_html=True
-        )
+            "<style>.stVideo {width: 100%; max-width: 400px;}</style>", unsafe_allow_html=True)
         st.video(videoA)
     else:
         st.warning("Video not found")
-    st.text(f"{len(actionsA)} moves:\n" + "\n".join(actionsA))
+    st.text(f"{lenA} moves:\n" + "\n".join(actionsA))
 
 with col2:
     st.markdown(f"### Trajectory B\n**File:** {fileB}")
     if videoB:
         st.markdown(
-            """
-            <style>
-            .stVideo {
-                width: 100%;
-                max-width: 400px;
-            }
-            </style>
-            """,
-            unsafe_allow_html=True
-        )
+            "<style>.stVideo {width: 100%; max-width: 400px;}</style>", unsafe_allow_html=True)
         st.video(videoB)
     else:
         st.warning("Video not found")
-    st.text(f"{len(actionsB)} moves:\n" + "\n".join(actionsB))
+    st.text(f"{lenB} moves:\n" + "\n".join(actionsB))
 
 option = st.radio("Which trajectory is better?",
                   options=["A", "B"], horizontal=True)
@@ -203,20 +199,16 @@ with col_nav3:
         st.session_state.index += 1
         st.experimental_rerun()
 
-# Show completion status for each board
+# Show completion grid
 st.subheader("Board Completion Status")
 completion_status = defaultdict(lambda: {"total": 0, "completed": 0})
 
-# Calculate totals
 for board_id in board_ids:
     completion_status[board_id]["total"] += 1
-
-# Calculate completed
 for result in st.session_state.results:
     board_id = result["trajectory_A"].split("_")[1]
     completion_status[board_id]["completed"] += 1
 
-# Display as a grid
 cols = st.columns(5)
 for idx, (board_id, status) in enumerate(sorted(completion_status.items())):
     col_idx = idx % 5

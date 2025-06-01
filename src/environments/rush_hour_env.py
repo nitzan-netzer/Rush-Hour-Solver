@@ -29,6 +29,7 @@ class RushHourEnv(Env):
         self.action_space = spaces.Discrete(self.max_vehicles * 4)
         self.observation_space = spaces.Box(
             low=0, high=255, shape=(36,), dtype=np.uint8)
+        print(f"num_vehicles: {self.max_vehicles}")
 
     def reset(self, board=None, seed=None):
         # Select a valid board with enough vehicles
