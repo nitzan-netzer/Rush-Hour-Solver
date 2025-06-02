@@ -93,6 +93,10 @@ class RushHourEnv(Env):
         move_str = ["U", "D", "L", "R"][move]
         vehicle_str = self.vehicles_letter[vehicle]
         return vehicle_str, move_str
+    
+    def get_current_board(self):
+        return deepcopy(self.board)
+
 
 
 if __name__ == "__main__":
