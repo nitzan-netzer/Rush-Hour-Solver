@@ -8,6 +8,7 @@ import time
 import numpy as np
 from environments.rush_hour_env import RushHourEnv
 from PIL import Image, ImageDraw
+from stable_baselines3 import PPO
 
 st.set_page_config(page_title="Rush Hour Solver", layout="wide")
 st.markdown("""
@@ -65,6 +66,8 @@ if "env" not in st.session_state:
     st.session_state.env = None
 if "initial_img" not in st.session_state:
     st.session_state.initial_img = None
+if "model" not in st.session_state:
+    st.session_state.model = None
 
 st.title("🚗 Rush Hour Puzzle Solver")
 num_vehicles = st.sidebar.slider("Number of vehicles", 3, 6, 6)
@@ -78,20 +81,29 @@ if st.sidebar.button("🚦 Start"):
     st.session_state.initial_img = generate_board_image(board_matrix)
     st.session_state.started = True
 
+    model_path = "./models_zip/ppo_rush_hour_model.zip"
+    if os.path.exists(model_path):
+        st.session_state.model = PPO.load(model_path, env=st.session_state.env)
+    else:
+        st.error("Model file not found at the specified path.")
+
 if st.session_state.started and st.session_state.initial_img:
     st.markdown("### 🧩 Your Board")
     st.image(st.session_state.initial_img, caption="Initial Board", use_container_width=False)
 
-if st.session_state.started:
+if st.session_state.started and st.session_state.model:
     if st.button("🔍 Solve Now"):
         with st.spinner("Solving..."):
             env = st.session_state.env
+            model = st.session_state.model
             images = []
             rewards = []
             solved = False
 
+            obs, _ = env.reset() 
+
             for step in range(max_steps):
-                action = env.action_space.sample()
+                action, _ = model.predict(obs, deterministic=True)
                 obs, reward, done, truncated, _ = env.step(action)
 
                 board_matrix = env.board.board
