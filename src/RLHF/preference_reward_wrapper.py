@@ -39,6 +39,8 @@ class PreferenceRewardWrapper(Wrapper):
                 reward = np.clip(reward, -50, 100)
             else:
                 reward = -10  # penalty for not escaping
+            print(
+                f"✅ FINAL REWARD: model_score={model_score}, final_reward={reward}")
         else:
             reward = self._shaped_reward(obs)
 

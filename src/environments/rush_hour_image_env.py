@@ -7,11 +7,12 @@ from gymnasium import Env, spaces
 import setup_path  # NOQA
 from GUI.board_to_image import generate_board_image
 from environments.init_boards_from_database import initialize_boards, load_specific_board_file
-from environments.rewards import basic_reward  # Import your reward function
+from environments.rewards import basic_reward
 
 
 class RushHourImageEnv(Env):
-    train_boards, test_boards = load_specific_board_file()
+    train_boards, test_boards = load_specific_board_file(
+        filename="1000_cards_2_cars_1_trucks.json", input_folder="database")
 
     def __init__(self, num_of_vehicle: int, image_size=(84, 84), train=True, rewards=basic_reward):
         super().__init__()
@@ -34,6 +35,7 @@ class RushHourImageEnv(Env):
             list({v.letter for b in self.boards for v in b.vehicles}))
         self.num_steps = 0
         self.state_history = []
+
         print(f"num_vehicles: {self.num_of_vehicle}")
 
     def reset(self, board=None, seed=None):
@@ -48,7 +50,8 @@ class RushHourImageEnv(Env):
 
     def step(self, action):
         vehicle_str, move_str = self.parse_action(action)
-        vehicle = self.board.get_vehicle_by_letter(vehicle_str)
+        vehicle = self.board.get_vehicle_by_letter(
+            vehicle_str) if vehicle_str else None
 
         valid_move = False
         done = False
@@ -56,9 +59,6 @@ class RushHourImageEnv(Env):
         if vehicle:
             valid_move = self.board.move_vehicle(vehicle, move_str)
             done = self.board.game_over()
-        else:
-            valid_move = False
-            done = False
 
         self.num_steps += 1
         truncated = self.num_steps >= self.max_steps
@@ -78,7 +78,6 @@ class RushHourImageEnv(Env):
 
         self.state = current_state
         self.state_history.append(tuple(current_state.flatten()))
-        # print(f"step: {self.num_steps}, reward: {reward}")
         return self.state, reward, done, truncated, self._get_info()
 
     def render(self):
@@ -91,19 +90,22 @@ class RushHourImageEnv(Env):
             board, scale=self.image_size[0] // 6, draw_letters=False)
         img = img.resize(self.image_size)
         img_array = np.asarray(img).astype(np.float32) / 255.0
-        img_array = np.clip(img_array, 0, 1)
-        return img_array
+        return np.clip(img_array, 0, 1)
 
     def parse_action(self, action):
         vehicle = action // 4
         move = action % 4
         move_str = ["U", "D", "L", "R"][move]
-        vehicle_str = self.vehicles_letter[vehicle]
+        try:
+            vehicle_str = self.vehicles_letter[vehicle]
+        except IndexError:
+            return None, None
         return vehicle_str, move_str
 
     def _get_info(self):
         non_empty_cells = np.count_nonzero(self.board.board != "")
         red_car_escaped = self.board.game_over()
+
         return {
             "non_empty_cells": non_empty_cells,
             "red_car_escaped": red_car_escaped,

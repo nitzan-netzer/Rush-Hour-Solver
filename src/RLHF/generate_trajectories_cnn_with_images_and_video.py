@@ -166,7 +166,7 @@ class TrajectoryGenerator:
 if __name__ == "__main__":
     generator = TrajectoryGenerator(
         model_path=Path(
-            "models_zip/PPO_MLP_full_run_1748637856.zip"),
+            "models_zip/PPO_MLP_full_4vehicles_run_1749058532.zip"),
         output_dir=Path("database/trajectories_mlp_policy"),
         num_boards=200,
         save_video=True

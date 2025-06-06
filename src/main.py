@@ -64,7 +64,7 @@ def main():
 
     for model_class, cnn, early_stopping in runs_to_train:
         run_id = f"run_{int(time.time())}"
-        model_name = f"{model_class.__name__}_{'CNN' if cnn else 'MLP'}_{'early' if early_stopping else 'full'}_{run_id}.zip"
+        model_name = f"{model_class.__name__}_{'CNN' if cnn else 'MLP'}_{'early' if early_stopping else 'full'}_{NUM_VEHICLES}vehicles_{run_id}.zip"
         model_path = MODEL_DIR / model_name
         log_file = LOG_DIR / f"{model_name}.csv"
 

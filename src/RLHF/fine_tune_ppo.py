@@ -4,12 +4,12 @@ from pathlib import Path
 import setup_path  # NOQA
 from environments.rush_hour_env import RushHourEnv
 from RLHF.preference_reward_wrapper import PreferenceRewardWrapper
+from RLHF.fine_tune_logger import FineTuneLogger  # ✅ NEW LOGGER
 from stable_baselines3 import PPO
 from GUI.visualizer import run_visualizer
 from utils.config import VIDEO_DIR, LOG_FILE_PATH
-from utils.custom_logger import RushHourCSVLogger
 from environments.evaluate import evaluate_model
-from utils.analyze_logs import analyze_logs  # ✅ Import log analyzer
+from utils.analyze_logs import analyze_logs
 from utils.config import NUM_VEHICLES
 
 
@@ -28,7 +28,8 @@ class RLHFFineTuner:
         self.wrapped_env = PreferenceRewardWrapper(self.env, reward_model_path)
 
         self.model = PPO.load(base_model_path, env=self.wrapped_env)
-        self.logger = RushHourCSVLogger(log_path=str(self.log_file))
+        self.logger = FineTuneLogger(
+            log_path=str(self.log_file))  # ✅ NEW LOGGER
 
     def train(self, timesteps=1_000_000):
         print("🚀 Starting fine-tuning with CSV logging...")
@@ -55,8 +56,8 @@ class RLHFFineTuner:
 
 
 if __name__ == "__main__":
-    base_model_path = "models_zip/PPO_MLP_full_run_1748637856.zip"
-    reward_model_path = "models_zip/preference_model_20250531_164021.keras"
+    base_model_path = "models_zip/PPO_MLP_full_4vehicles_run_1749058532.zip"
+    reward_model_path = "models_zip/preference_model_20250605_124526.keras"
     tuner = RLHFFineTuner(base_model_path, reward_model_path, LOG_FILE_PATH)
 
     tuner.train(timesteps=1_000_000)

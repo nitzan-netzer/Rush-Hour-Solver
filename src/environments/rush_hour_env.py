@@ -2,13 +2,15 @@ from gymnasium import Env, spaces
 from copy import deepcopy
 from random import choice
 import numpy as np
+
 from environments.board import Board
 from environments.rewards import basic_reward
-from .init_boards_from_database import initialize_boards, load_specific_board_file
+from environments.init_boards_from_database import initialize_boards, load_specific_board_file
 
 
 class RushHourEnv(Env):
-    train_boards, test_boards = load_specific_board_file()
+    train_boards, test_boards = load_specific_board_file(
+        filename="1000_cards_2_cars_1_trucks.json", input_folder="database")
 
     def __init__(self, num_of_vehicle: int = 6, min_vehicles: int = 4, rewards=basic_reward, train=True):
         super().__init__()
@@ -24,15 +26,16 @@ class RushHourEnv(Env):
         self.state = None
         self.num_steps = 0
         self.state_history = []
-
         self.vehicles_letter = []
+
         self.action_space = spaces.Discrete(self.max_vehicles * 4)
         self.observation_space = spaces.Box(
-            low=0, high=255, shape=(36,), dtype=np.uint8)
+            low=0, high=255, shape=(36,), dtype=np.uint8
+        )
+
         print(f"num_vehicles: {self.max_vehicles}")
 
     def reset(self, board=None, seed=None):
-        # Select a valid board with enough vehicles
         while True:
             b = deepcopy(choice(self.boards)
                          ) if board is None else deepcopy(board)
@@ -50,7 +53,8 @@ class RushHourEnv(Env):
 
     def step(self, action):
         vehicle_str, move_str = self.parse_action(action)
-        vehicle = self.board.get_vehicle_by_letter(vehicle_str)
+        vehicle = self.board.get_vehicle_by_letter(
+            vehicle_str) if vehicle_str else None
 
         valid_move = False
         done = False
@@ -84,15 +88,13 @@ class RushHourEnv(Env):
     def parse_action(self, action):
         num_vehicles = len(self.vehicles_letter)
         max_action = num_vehicles * 4
-        if action >= max_action:
-            # Return dummy no-op if action is invalid (SB3 might sample full space)
-            return self.vehicles_letter[0], "U"  # safe fallback
+        if action >= max_action or num_vehicles == 0:
+            return None, None  # Safe fallback
 
         vehicle = action // 4
         move = action % 4
         move_str = ["U", "D", "L", "R"][move]
-        vehicle_str = self.vehicles_letter[vehicle]
-        return vehicle_str, move_str
+        return self.vehicles_letter[vehicle], move_str
 
     def render(self):
         print(self.board)
@@ -102,3 +104,9 @@ class RushHourEnv(Env):
             "non_empty_cells": np.count_nonzero(self.board.board != ""),
             "red_car_escaped": self.board.game_over()
         }
+
+
+if __name__ == "__main__":
+    env = RushHourEnv(num_of_vehicle=6)
+    obs, _ = env.reset()
+    env.render()

@@ -6,7 +6,15 @@ import os
 from pathlib import Path
 
 
-def initialize_boards(input_folder="database"):
+def initialize_boards(input_folder=None):
+    """
+    Initialize all board JSONs from the database folder, excluding non-board files.
+    """
+    if input_folder is None:
+        file_path = Path(__file__)
+        input_folder = file_path.parent.parent.parent / "database"
+        input_folder = str(input_folder)
+
     boards = []
     for file in os.listdir(input_folder):
         if not file.endswith(".json"):
@@ -15,6 +23,7 @@ def initialize_boards(input_folder="database"):
             continue  # skip non-board data
         json_boards_path = os.path.join(input_folder, file)
         boards.extend(Board.load_multiple_boards(json_boards_path))
+
     return train_test_split(boards, test_size=0.2, random_state=42)
 
 

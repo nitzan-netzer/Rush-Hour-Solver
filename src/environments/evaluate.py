@@ -1,9 +1,8 @@
 from stable_baselines3 import PPO
-import setup_path
+import setup_path  # NOQA
 from environments.rush_hour_env import RushHourEnv
 from environments.rush_hour_image_env import RushHourImageEnv
-from utils.config import MODEL_PATH
-from utils.config import NUM_VEHICLES
+from utils.config import MODEL_PATH, NUM_VEHICLES
 import os
 
 
@@ -38,7 +37,6 @@ def evaluate_model(model, env, episodes=None):
 
 
 def main():
-    # === Configuration ===
     model_path = "models_zip/PPO_CNN_full_run_1748719838.zip"
     use_image_env = True
     image_size = 128
