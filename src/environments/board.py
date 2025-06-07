@@ -335,12 +335,13 @@ class Board:
         """
         moves = []
         for vehicle in self.vehicles:
-            if vehicle.direction == "RL":
-                moves.append((vehicle.letter, "L"))
-                moves.append((vehicle.letter, "R"))
-            else:
-                moves.append((vehicle.letter, "U"))
-                moves.append((vehicle.letter, "D"))
+            vehicle_moves = vehicle.get_possible_moves(self)
+            if vehicle_moves:
+                if len (vehicle_moves) == 1:
+                    moves.append((vehicle.letter, vehicle_moves))
+                else:
+                    moves.append((vehicle.letter, vehicle_moves[0]))
+                    moves.append((vehicle.letter, vehicle_moves[1]))
         return tuple(moves)
 
     def get_board_flatten(self):
@@ -388,11 +389,11 @@ class Board:
             return float('inf')
         
         # Distance from red car to exit (column 5)
-        distance_to_exit = 5 - (red_car.col + red_car.length)
+        distance_to_exit = self.col-1 - (red_car.col + red_car.length)
     
         # Count blocking vehicles
         blocking_vehicles = 0
-        for col in range(red_car.col + red_car.length, 6):
+        for col in range(red_car.col + red_car.length, self.col):
             if self.board[red_car.row, col] != "":
                 blocking_vehicles += 1
         
