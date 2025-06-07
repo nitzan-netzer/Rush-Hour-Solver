@@ -1,4 +1,4 @@
-def basic_reward(state_history, current_state, vehicle, valid_move, done, truncated, board, steps, max_steps=5):
+def old_basic_reward(state_history, current_state, vehicle, valid_move, done, truncated, board, steps, max_steps=5):
     """
     Basic reward: small penalty per step, heavy penalty for invalid moves, reward for solving.
     """
@@ -69,5 +69,22 @@ def reward_function_no_repetition(state_history, current_state, vehicle, valid_m
         reward += 1000 - 3 * steps
     if truncated:
         reward -= 100
+
+    return reward
+
+def basic_reward(state_history, current_state, vehicle, valid_move, done, truncated, board, steps, max_steps=5):
+    """
+    Combines heuristic-based rewards with basic penalties.
+    """
+    reward = -1  # Base step penalty
+    if valid_move:
+        heuristic_value = board.get_heuristic()
+        reward -= heuristic_value**2
+       
+    else:
+        reward = -10
+
+    if done:
+        reward += 1000
 
     return reward

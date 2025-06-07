@@ -46,7 +46,7 @@ def run_visualizer(model, env, record=False, output_video="videos/rush_hour_solu
     pygame.display.set_caption("Rush Hour - Agent Demo")
     font = pygame.font.SysFont(None, 36)
 
-    obs, _ = env.reset()
+    obs, info = env.reset()
 
     # Draw initial state
     if hasattr(env, "board"):  # Classic vector env
@@ -81,8 +81,9 @@ def run_visualizer(model, env, record=False, output_video="videos/rush_hour_solu
                     out.release()
                 return
 
-        action, _ = model.predict(obs)
-        obs, reward, done, truncated, _ = env.step(action)
+        action_mask = info.get("action_mask")
+        action, _ = model.predict(obs, action_masks=action_mask)
+        obs, reward, done, truncated, info = env.step(action)
         print(f"Step {env.num_steps}: reward: {reward}")
 
         if hasattr(env, "board"):
@@ -115,3 +116,13 @@ def run_visualizer(model, env, record=False, output_video="videos/rush_hour_solu
     if out:
         out.release()
         print(f"✅ Video saved to {output_video}")
+if __name__ == "__main__":
+    from utils.config import NUM_VEHICLES
+    from environments.rush_hour_env import RushHourEnv
+    from environments.rewards import basic_reward
+    from sb3_contrib.ppo_mask import MaskablePPO as PPO
+    model_path = r"models_zip\MaskablePPO_MLP_8x8"
+    env = RushHourEnv(NUM_VEHICLES, train=False, rewards=basic_reward)
+    model=  PPO.load(model_path, env=env)
+
+    run_visualizer(model,env,record=True, output_video="videos/rush_hour_solution.mp4")

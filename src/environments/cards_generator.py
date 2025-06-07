@@ -92,10 +92,10 @@ def save(boards, path, save_images=False):
                 break
 
 def main():
-    num_cards = 100
+    num_cards = 1000
     num_trucks = 4
     num_cars = 11
-    num_step = 10
+    num_step = 100
     threshold = 1
     boards = cards_generator(num_cards, num_cars, num_trucks, num_step, threshold,shuffle=True)
     filename = f"{num_cards}_cards_{num_cars}_cars_{num_trucks}_trucks"
