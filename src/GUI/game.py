@@ -7,13 +7,12 @@ from copy import deepcopy
 from random import choice
 from algorithms.BFS import bfs
 from algorithms.ASTAR import astar
-
+from utils.config import BOARD_SIZE
 # Initialize Pygame
 pygame.init()
 
 # Constants
 CELL_SIZE = 80
-BOARD_SIZE = 8 
 WINDOW_SIZE = BOARD_SIZE * CELL_SIZE
 MARGIN = 50
 TOTAL_SIZE = WINDOW_SIZE + 2 * MARGIN

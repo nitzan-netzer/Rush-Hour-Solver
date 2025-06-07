@@ -4,10 +4,10 @@ import time
 import numpy as np
 import cv2
 from GUI.board_to_image import letter_to_color
+from utils.config import BOARD_SIZE
 
 # === Settings ===
 TILE_SIZE = 80
-BOARD_SIZE = 8
 WINDOW_SIZE = TILE_SIZE * BOARD_SIZE
 TEXT_COLOR = (0, 0, 0)
 COLORS = letter_to_color
@@ -70,8 +70,10 @@ def run_visualizer(model, env, record=False, output_video="videos/rush_hour_solu
         frame = np.transpose(frame, (1, 0, 2))
         frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
         out.write(frame)
-
-    for i in range(50):
+    
+    done = False
+    truncated = False
+    while not done and not truncated:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -80,8 +82,8 @@ def run_visualizer(model, env, record=False, output_video="videos/rush_hour_solu
                 return
 
         action, _ = model.predict(obs)
-        obs, reward, done, _, _ = env.step(action)
-        print(f"Step {i}: reward: {reward}")
+        obs, reward, done, truncated, _ = env.step(action)
+        print(f"Step {env.num_steps}: reward: {reward}")
 
         if hasattr(env, "board"):
             draw_board(screen, env.board, font)

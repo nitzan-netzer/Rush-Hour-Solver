@@ -15,7 +15,7 @@ from algorithms.ASTAR import astar
 from environments.board_random import BoardRandom
 from environments.vehicles import Car, Truck
 from GUI.board_to_image import car_colors, save_board_to_image, truck_colors
-
+from utils.config import BOARD_SIZE
 DIRECTIONS = ["UD", "RL"]
 
 
@@ -41,7 +41,7 @@ def cards_generator(
     before random moves, it guarantee board is can be solved.
     """
     boards: list[BoardRandom] = []
-    board = BoardRandom(row=8,col=8)
+    board = BoardRandom(row=BOARD_SIZE,col=BOARD_SIZE)
     hashset = set()
 
     with tqdm(total=num_cards, desc="Generating Boards") as pbar:
@@ -87,8 +87,7 @@ def save(boards, path, save_images=False):
     if save_images:
         os.makedirs(path, exist_ok=True)
         for i, board in enumerate(boards):
-            save_board_to_image(board, rf"{
-                path}/board-{i}.png")
+            save_board_to_image(board, rf"{path}/board-{i}.png")
             if i == 10:
                 break
 
@@ -96,7 +95,7 @@ def main():
     num_cards = 100
     num_trucks = 4
     num_cars = 11
-    num_step = 1000
+    num_step = 10
     threshold = 1
     boards = cards_generator(num_cards, num_cars, num_trucks, num_step, threshold,shuffle=True)
     filename = f"{num_cards}_cards_{num_cars}_cars_{num_trucks}_trucks"
