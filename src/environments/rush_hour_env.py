@@ -19,13 +19,13 @@ class RushHourEnv(Env):
         super().__init__()
         self.boards = RushHourEnv.train_boards if train else RushHourEnv.test_boards
         self.max_steps = 2000 if train else 5000
-
+        num_of_vehicle = len(self.boards[0].get_all_vehicles_letter())
         self.num_of_vehicle = num_of_vehicle
         self.get_reward = rewards
-
+        size = self.boards[0].row * self.boards[0].col
         self.action_space = spaces.Discrete(num_of_vehicle * 4)
         self.observation_space = spaces.Box(
-            low=0, high=255, shape=(36,), dtype=np.uint8
+            low=0, high=255, shape=(size,), dtype=np.uint8
         )
 
         self.state = None
@@ -40,7 +40,7 @@ class RushHourEnv(Env):
         self.vehicles_letter = self.board.get_all_vehicles_letter()
         self.num_steps = 0
         self.state = self.board.get_board_flatten().astype(np.uint8)
-        self.state_history = [tuple(self.state)]  # For no-repetition reward
+        #self.state_history = [tuple(self.state)]  # For no-repetition reward
         return self.state, self._get_info()
 
     def step(self, action):
@@ -71,7 +71,7 @@ class RushHourEnv(Env):
             max_steps=self.max_steps
         )
 
-        self.state_history.append(tuple(current_state))
+        #self.state_history.append(tuple(current_state))
         self.state = current_state
 
         return self.state, reward, done, truncated, self._get_info()
@@ -95,6 +95,7 @@ class RushHourEnv(Env):
             vehicle_str = self.vehicles_letter[vehicle]
         except IndexError: # if send wrong num_of_vehicle 
             return None, None
+        #print(f"Action: {action}, Vehicle: {vehicle_str}, Move: {move_str}")
         return vehicle_str, move_str
 
 

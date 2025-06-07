@@ -41,7 +41,7 @@ def cards_generator(
     before random moves, it guarantee board is can be solved.
     """
     boards: list[BoardRandom] = []
-    board = BoardRandom()
+    board = BoardRandom(row=8,col=8)
     hashset = set()
 
     with tqdm(total=num_cards, desc="Generating Boards") as pbar:
@@ -70,7 +70,7 @@ def cards_generator(
                 difficulty = board.get_heuristic()
                 board_hash = board.get_hash()
                 if difficulty > threshold and not board_hash in hashset:
-                    board.update_heuristic_and_min_steps(astar)
+                    #board.update_heuristic_and_min_steps(astar)
                     boards.append(deepcopy(board))
                     hashset.add(board_hash)
                     pbar.update(1)
@@ -80,7 +80,7 @@ def cards_generator(
 
 def save(boards, path, save_images=False):
     """
-    Save the board to a JSON file.
+    Save the board to a JSON file
     """
     filename = f"{path}.json"
     BoardRandom.save_multiple_boards(boards, filename)
@@ -93,22 +93,14 @@ def save(boards, path, save_images=False):
                 break
 
 def main():
-    num_cards = 1000
-    num_trucks = 1
-    num_step = 50
-    for num_cars in range(2, 5):
-        threshold = num_cars + num_trucks
-        boards = cards_generator(num_cards, num_cars, num_trucks, num_step, threshold,shuffle=True)
-        filename = f"{num_cards}_cards_{num_cars}_cars_{num_trucks}_trucks"
-        path = f"database/{filename}"
-        save(boards, path, save_images=True)    
-    
-    num_cars = 3 
-    num_trucks = 2
-    threshold = num_cars + num_trucks
+    num_cards = 100
+    num_trucks = 4
+    num_cars = 11
+    num_step = 1000
+    threshold = 1
     boards = cards_generator(num_cards, num_cars, num_trucks, num_step, threshold,shuffle=True)
     filename = f"{num_cards}_cards_{num_cars}_cars_{num_trucks}_trucks"
     path = f"database/{filename}"
-    save(boards, path, save_images=True)   
+    save(boards, path, save_images=True)    
 if __name__ == "__main__":
     main()

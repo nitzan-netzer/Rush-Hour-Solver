@@ -7,7 +7,7 @@ from GUI.board_to_image import letter_to_color
 
 # === Settings ===
 TILE_SIZE = 80
-BOARD_SIZE = 6
+BOARD_SIZE = 8
 WINDOW_SIZE = TILE_SIZE * BOARD_SIZE
 TEXT_COLOR = (0, 0, 0)
 COLORS = letter_to_color

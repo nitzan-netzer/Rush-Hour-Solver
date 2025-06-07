@@ -31,6 +31,8 @@ class Board:
         """
         self.row = row
         self.col = col
+        self.win_x = (self.row-1)//2
+        self.win_y = self.col-1
         self.reset(init_red_car)
 
     def reset(self, init_red_car=True):
@@ -40,7 +42,7 @@ class Board:
         self.vehicles = []
         self.board = np.empty((self.row, self.col), dtype=str)
         if init_red_car:
-            self.add_vehicle(RedCar(), 2, 4)
+            self.add_vehicle(RedCar(), self.win_x, self.win_y-1)
         
         self.is_updated = False
         self.min_steps = 0
@@ -170,10 +172,10 @@ class Board:
         Returns:
             bool: True if the red car is at the winning position, False otherwise.
         """
-        return self.board[2, 5] != "X" and self.board[2, 5] != ""
+        return self.board[self.win_x, self.win_y] != "X" and self.board[self.win_x, self.win_y] != ""
 
     def game_over(self) -> bool:
-        return self.board[2, 5] == "X"
+        return self.board[self.win_x, self.win_y] == "X"
 
     def get_vehicle_by_letter(self, letter: str):
         """

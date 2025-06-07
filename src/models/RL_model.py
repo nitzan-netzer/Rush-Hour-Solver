@@ -1,5 +1,4 @@
 import setup_path  # NOQA
-import torch
 from pathlib import Path
 
 from environments.rush_hour_env import RushHourEnv
@@ -19,7 +18,6 @@ from stable_baselines3.common.policies import ActorCriticCnnPolicy
 
 from utils.config import MODEL_PATH, LOG_FILE_PATH, NUM_VEHICLES
 
-torch.set_num_threads(1)
 
 
 class RLModel:
@@ -50,7 +48,7 @@ class RLModel:
         self.model = model_class(
             policy,
             self.env,
-            verbose=1,
+            verbose=0,
             policy_kwargs=policy_kwargs
         )
 
@@ -76,7 +74,7 @@ class RLModel:
             callbacks.append(early_stop)
             total_timesteps = 30_000
         else:
-            total_timesteps = 50_000
+            total_timesteps = 2_000_000
 
         self.model.learn(
             total_timesteps=total_timesteps,
