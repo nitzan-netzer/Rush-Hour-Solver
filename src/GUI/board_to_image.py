@@ -1,11 +1,9 @@
-
 """
 This module provides functions to generate images and videos from board states.
 """
 import numpy as np
 import imageio.v2 as imageio
 from PIL import Image, ImageDraw, ImageFont
-
 
 car_colors = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K"]
 truck_colors = ["O", "P", "Q", "R"]
@@ -83,6 +81,15 @@ def generate_board_image(board, scale: int = 50, draw_letters: bool = False) -> 
     edge_col = (5 + 1) * scale  # Right edge of column 5 in pixels
     cords = [(edge_col, edge_row), (edge_col, edge_row + scale)]
     draw.line(cords, fill=WHITE, width=5)
+
+    # Pad image to next multiple of 16 for video compatibility
+    width, height = img.size
+    pad_width = (16 - width % 16) % 16
+    pad_height = (16 - height % 16) % 16
+    if pad_width or pad_height:
+        new_img = Image.new("RGB", (width + pad_width, height + pad_height), (220, 220, 220))
+        new_img.paste(img, (0, 0))
+        img = new_img
 
     return img
 
