@@ -9,6 +9,8 @@ import numpy as np
 from environments.rush_hour_env import RushHourEnv
 from PIL import Image, ImageDraw
 from stable_baselines3 import PPO
+from torchviz import make_dot
+import torch
 
 st.set_page_config(page_title="Rush Hour Solver", layout="wide")
 st.markdown("""
@@ -60,6 +62,7 @@ def generate_board_image(board_matrix, cell_size=40):
                 draw.text((x0 + 12, y0 + 10), cell, fill="white")
     return img.resize((250, 250))
 
+
 if "started" not in st.session_state:
     st.session_state.started = False
 if "env" not in st.session_state:
@@ -68,42 +71,55 @@ if "initial_img" not in st.session_state:
     st.session_state.initial_img = None
 if "model" not in st.session_state:
     st.session_state.model = None
+if "initial_obs" not in st.session_state:
+    st.session_state.initial_obs = None
 
-st.title("🚗 Rush Hour Puzzle Solver")
+
+st.title("Rush Hour Puzzle Solver 🚗🚗🚗🚗🚗")
 num_vehicles = st.sidebar.slider("Number of vehicles", 3, 6, 6)
 max_steps = st.sidebar.slider("Maximum steps", 10, 100, 50)
 step_delay = st.sidebar.slider("Animation speed (sec)", 0.05, 1.0, 0.2)
 
-if st.sidebar.button("🚦 Start"):
-    st.session_state.env = RushHourEnv(num_of_vehicle=num_vehicles, train=False)
-    obs, _ = st.session_state.env.reset()
-    board_matrix = st.session_state.env.board.board
-    st.session_state.initial_img = generate_board_image(board_matrix)
+if st.sidebar.button("Start 👽"):
+    env = RushHourEnv(num_of_vehicle=num_vehicles, train=False)
+    obs, _ = env.reset()
+    st.session_state.env = env
     st.session_state.started = True
+    st.session_state.initial_obs = obs
+    st.session_state.initial_board = env.board.board.copy()
+    st.session_state.initial_img = generate_board_image(st.session_state.initial_board)
 
     model_path = "./models_zip/ppo_rush_hour_model.zip"
     if os.path.exists(model_path):
-        st.session_state.model = PPO.load(model_path, env=st.session_state.env)
+        st.session_state.model = PPO.load(model_path)  
+        #  סוג הרשת והפרמטרים שלה
+        print(st.session_state.model.policy)            # מידע על הרשת (policy)
+        print(st.session_state.model.policy.mlp_extractor)  # מבנה הרשת הפנימית
+
+        # כמות הפרמטרים ברשת
+        total_params = sum(p.numel() for p in st.session_state.model.policy.parameters())
+        print(f"Total parameters in policy network: {total_params}")
     else:
         st.error("Model file not found at the specified path.")
 
 if st.session_state.started and st.session_state.initial_img:
-    st.markdown("### 🧩 Your Board")
+    st.markdown("### Your Board 🧩 ")
     st.image(st.session_state.initial_img, caption="Initial Board", use_container_width=False)
 
 if st.session_state.started and st.session_state.model:
-    if st.button("🔍 Solve Now"):
+    if st.button("Solve Now 🔍"):
         with st.spinner("Solving..."):
             env = st.session_state.env
             model = st.session_state.model
+
+            obs = st.session_state.initial_obs  
+
             images = []
             rewards = []
             solved = False
 
-            obs, _ = env.reset() 
-
             for step in range(max_steps):
-                action, _ = model.predict(obs, deterministic=True)
+                action, _ = model.predict(obs, deterministic=False)
                 obs, reward, done, truncated, _ = env.step(action)
 
                 board_matrix = env.board.board
@@ -118,14 +134,28 @@ if st.session_state.started and st.session_state.model:
             st.markdown(f"## ✅ Solved: {'Yes' if solved else 'No'} in {len(images)} steps")
             st.markdown(f"### 🧮 Total Reward: `{sum(rewards):.2f}`")
 
-            st.markdown("### 🎞️ Animation")
+            st.markdown("### Animation 🎞️ ")
             img_placeholder = st.empty()
             for i, img in enumerate(images):
                 img_placeholder.image(img, caption=f"Step {i+1} | Reward: {rewards[i]:.2f}", use_container_width=False)
                 time.sleep(step_delay)
 
-            st.markdown("### 🧩 All Steps Grid")
+            st.markdown("### All Steps Grid 🧩 ")
             cols = st.columns(5)
             for i, img in enumerate(images):
                 with cols[i % 5]:
                     st.image(img, caption=f"Step {i+1}", use_container_width=False)
+
+# if st.sidebar.button("Show Model Graph"):
+#     model = st.session_state.model
+#     policy = model.policy
+
+#     dummy_input = torch.zeros(1, *policy.observation_space.shape)
+#     output = policy.forward(dummy_input)
+
+#     dot = make_dot(output, params=dict(policy.named_parameters()))
+#     dot.format = 'png'
+#     dot.render('/tmp/policy_network')
+
+#     img = Image.open('/tmp/policy_network.png')
+#     st.image(img, caption="Policy Network Graph")
