@@ -1,6 +1,8 @@
 import time
 from pathlib import Path
-from stable_baselines3 import PPO, DQN, A2C
+from stable_baselines3 import DQN, A2C
+from sb3_contrib.ppo_mask import MaskablePPO as PPO
+from sb3_contrib.common.wrappers import ActionMasker
 from models.RL_model import RLModel
 from environments.rush_hour_env import RushHourEnv
 from environments.rush_hour_image_env import RushHourImageEnv
@@ -8,7 +10,6 @@ from environments.rewards import basic_reward
 from utils.analyze_logs import analyze_logs
 from GUI.visualizer import run_visualizer
 from utils.config import MODEL_DIR, LOG_DIR, VIDEO_PATH, NUM_VEHICLES
-
 
 def load_model_from_path(model_path, env):
     name = model_path.name.lower()
@@ -43,6 +44,13 @@ def visualize_all_models(models_paths):
         run_visualizer(model, env, record=True, output_video=str(video_path))
         print(f"✅ Video saved at: {video_path}")
 
+def mask_fn(env):
+    """
+    This function returns the valid action mask for the current state of the env.
+    It must return a boolean np.ndarray of shape (env.action_space.n,)
+    """
+    return env.board.get_all_valid_actions()
+
 
 def main():
     start_time = time.time()
@@ -52,14 +60,14 @@ def main():
 
     runs_to_train = [
         # PPO CNN
-        (PPO, True, True),   # PPO-CNN + EarlyStopping
-        (PPO, True, False),  # PPO-CNN + No EarlyStopping
+        #(PPO, True, True),   # PPO-CNN + EarlyStopping
+        #(PPO, True, False),  # PPO-CNN + No EarlyStopping
         # PPO MLP
         (PPO, False, True),  # PPO-MLP + EarlyStopping
         (PPO, False, False),  # PPO-MLP + No EarlyStopping
         # DQN MLP
-        (DQN, False, True),  # DQN-MLP + EarlyStopping
-        (DQN, False, False),  # DQN-MLP + No EarlyStopping
+        #(DQN, False, True),  # DQN-MLP + EarlyStopping
+        #(DQN, False, False),  # DQN-MLP + No EarlyStopping
     ]
 
     for model_class, cnn, early_stopping in runs_to_train:
@@ -78,6 +86,7 @@ def main():
         # Create environment (must be done before RLModel to get obs_space)
         env = RushHourImageEnv(NUM_VEHICLES, train=True, rewards=basic_reward, image_size=(128, 128)) \
             if cnn else RushHourEnv(NUM_VEHICLES, train=True, rewards=basic_reward)
+        env = ActionMasker(env, mask_fn) 
 
         model = RLModel(
             model_class=model_class,

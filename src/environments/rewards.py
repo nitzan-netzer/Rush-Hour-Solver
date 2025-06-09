@@ -71,3 +71,16 @@ def reward_function_no_repetition(state_history, current_state, vehicle, valid_m
         reward -= 100
 
     return reward
+
+def reward_heuristic(state_history, current_state, vehicle, valid_move, done, truncated, board, steps, max_steps=5):
+    """
+    Combines heuristic-based rewards with basic penalties.
+    """
+    reward = -1  # Base step penalty
+    heuristic_value = board.get_heuristic()
+    reward -= heuristic_value
+
+    if done:
+        reward += 1000
+
+    return reward
