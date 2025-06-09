@@ -41,9 +41,10 @@ class Board:
         """
         self.vehicles = []
         self.board = np.empty((self.row, self.col), dtype=str)
+        self.num_of_vehicles = 0
         if init_red_car:
             self.add_vehicle(RedCar(), self.win_x, self.win_y-1)
-        
+        self.vehicles_letter = None
         self.is_updated = False
         self.min_steps = 0
         self.heuristic = 0
@@ -72,6 +73,7 @@ class Board:
         vehicle.row = row
         vehicle.col = col
         self.vehicles.append(vehicle)
+        self.num_of_vehicles += 1
         self.is_updated = False
 
 
@@ -326,24 +328,51 @@ class Board:
 
         return board_equal and vehicles_len_equal
 
-    def get_all_moves(self):
+    def get_all_valid_actions(self):
         """
         Get all possible moves for all vehicles on the board.
 
         Returns:
             dict: A dictionary mapping vehicle letters to possible moves.
         """
-        moves = []
+        num_of_move = self.num_of_vehicles *4
+        valid_actions = np.zeros(num_of_move, dtype=bool)
         for vehicle in self.vehicles:
             vehicle_moves = vehicle.get_possible_moves(self)
             if vehicle_moves:
                 if len (vehicle_moves) == 1:
-                    moves.append((vehicle.letter, vehicle_moves))
+                    reverse_action = self.reverse_action(vehicle.letter, vehicle_moves[0])
+                    valid_actions[reverse_action] = True
                 else:
-                    moves.append((vehicle.letter, vehicle_moves[0]))
-                    moves.append((vehicle.letter, vehicle_moves[1]))
-        return tuple(moves)
+                    reverse_action_1 = self.reverse_action(vehicle.letter, vehicle_moves[0])
+                    reverse_action_2 = self.reverse_action(vehicle.letter, vehicle_moves[1])
+                    valid_actions[reverse_action_1] = True
+                    valid_actions[reverse_action_2] = True
+        return valid_actions
+    
+    def reverse_action(self, vehicle_letter: str, move_direction: str) -> int:
+        """
+        Reverse the action of moving a vehicle in the specified direction.
 
+        Args:
+            vehicle_letter (str): The letter of the vehicle to reverse.
+            move_direction (str): The direction to reverse ("L", "R", "U", "D").
+
+        Returns:
+            int: The action index corresponding to the reversed move.
+        """
+        vehicles_letter = self.get_all_vehicles_letter()
+        index = vehicles_letter.index(vehicle_letter)
+        if move_direction == "U":
+            return index * 4 + 0
+        elif move_direction == "D":
+            return index * 4 + 1
+        elif move_direction == "L":
+            return index * 4 + 2
+        elif move_direction == "R":
+            return index * 4 + 3
+        else:
+            raise ValueError(f"Invalid move direction: {move_direction}")
     def get_board_flatten(self):
         """
         Get the board state as a flattened numpy array.
@@ -371,10 +400,12 @@ class Board:
         """"
         Get all vehicle letters on the board.
         """
+        if self.vehicles_letter is None:
+            vehicles_str = [vehicle.letter for vehicle in self.vehicles]
+            vehicles_str.sort()
+            self.vehicles_letter = vehicles_str
+        return self.vehicles_letter
     
-        vehicles_str = [vehicle.letter for vehicle in self.vehicles]
-        vehicles_str.sort()
-        return vehicles_str
 
     def get_heuristic(self) -> int:
         """

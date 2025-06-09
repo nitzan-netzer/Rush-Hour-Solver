@@ -7,11 +7,12 @@ from environments.evaluate import evaluate_model
 # You can change to another reward here
 from environments.rewards import basic_reward
 
-from stable_baselines3 import PPO, DQN, A2C
+from stable_baselines3 import DQN, A2C
+from sb3_contrib.ppo_mask import MaskablePPO as PPO
 from stable_baselines3.common.env_checker import check_env
 
 from utils.custom_logger import RushHourCSVLogger
-from models.early_stopping import EarlyStoppingSuccessRateCallback
+from models.early_stopping import EarlyStoppingRewardCallback
 
 from models.cnn_policy import RushHourCNN
 from stable_baselines3.common.policies import ActorCriticCnnPolicy
@@ -66,13 +67,13 @@ class RLModel:
         callbacks = [csv_logger]
 
         if self.early_stopping:
-            early_stop = EarlyStoppingSuccessRateCallback(
+            early_stop = EarlyStoppingRewardCallback(
                 window_size=window_size,
-                success_threshold=0.9,
+                reward_threshold=900,
                 verbose=1
             )
             callbacks.append(early_stop)
-            total_timesteps = 30_000
+            total_timesteps = 2_000_000 
         else:
             total_timesteps = 2_000_000
 

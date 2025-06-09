@@ -46,7 +46,8 @@ def run_visualizer(model, env, record=False, output_video="videos/rush_hour_solu
     pygame.display.set_caption("Rush Hour - Agent Demo")
     font = pygame.font.SysFont(None, 36)
 
-    obs, _ = env.reset()
+    obs, info = env.reset()
+
 
     # Draw initial state
     if hasattr(env, "board"):  # Classic vector env
@@ -81,8 +82,9 @@ def run_visualizer(model, env, record=False, output_video="videos/rush_hour_solu
                     out.release()
                 return
 
-        action, _ = model.predict(obs)
-        obs, reward, done, truncated, _ = env.step(action)
+        action_mask = info.get("action_mask")
+        action, _ = model.predict(obs, action_masks=action_mask)
+        obs, reward, done, truncated, info = env.step(action)
         print(f"Step {env.num_steps}: reward: {reward}")
 
         if hasattr(env, "board"):
