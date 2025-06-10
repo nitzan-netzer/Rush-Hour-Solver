@@ -6,7 +6,7 @@ from sb3_contrib.common.wrappers import ActionMasker
 from models.RL_model import RLModel
 from environments.rush_hour_env import RushHourEnv
 from environments.rush_hour_image_env import RushHourImageEnv
-from environments.rewards import basic_reward
+from environments.rewards import basic_reward, per_steps_reward
 from utils.analyze_logs import analyze_logs
 from GUI.visualizer import run_visualizer
 from utils.config import MODEL_DIR, LOG_DIR, VIDEO_PATH, NUM_VEHICLES
@@ -35,8 +35,8 @@ def visualize_all_models(models_paths):
         video_path = VIDEO_PATH.parent / f"{model_path.stem}_demo.mp4"
 
         is_cnn = "cnn" in model_path.name.lower()
-        env = RushHourImageEnv(NUM_VEHICLES, train=False, rewards=basic_reward, image_size=(128, 128)) \
-            if is_cnn else RushHourEnv(NUM_VEHICLES, train=False, rewards=basic_reward)
+        env = RushHourImageEnv(NUM_VEHICLES, train=False, rewards=per_steps_reward, image_size=(128, 128)) \
+            if is_cnn else RushHourEnv(NUM_VEHICLES, train=False, rewards=per_steps_reward)
 
         print(
             f"🎬 Visualizing model {i + 1}/{len(models_paths)}: {model_path.name}")
@@ -63,7 +63,7 @@ def main():
         #(PPO, True, True),   # PPO-CNN + EarlyStopping
         #(PPO, True, False),  # PPO-CNN + No EarlyStopping
         # PPO MLP
-        (PPO, False, True),  # PPO-MLP + EarlyStopping
+        # (PPO, False, True),  # PPO-MLP + EarlyStopping
         (PPO, False, False),  # PPO-MLP + No EarlyStopping
         # DQN MLP
         #(DQN, False, True),  # DQN-MLP + EarlyStopping
@@ -72,7 +72,7 @@ def main():
 
     for model_class, cnn, early_stopping in runs_to_train:
         run_id = f"run_{int(time.time())}"
-        model_name = f"{model_class.__name__}_{'CNN' if cnn else 'MLP'}_{'early' if early_stopping else 'full'}_{run_id}.zip"
+        model_name = f"{model_class.__name__}_{'CNN' if cnn else 'MLP'}_{'early' if early_stopping else 'full'}_{NUM_VEHICLES}vehicles_{run_id}.zip"
         model_path = MODEL_DIR / model_name
         log_file = LOG_DIR / f"{model_name}.csv"
 

@@ -1,20 +1,20 @@
-import json
+from gymnasium import Env, spaces
 from copy import deepcopy
 from random import choice
-
 import numpy as np
 from gymnasium import Env, spaces
 
-import setup_path  # NOQA
+
 from environments.board import Board
 from environments.rewards import basic_reward
-from environments.init_boards_from_database import initialize_boards
+from environments.init_boards_from_database import initialize_boards, load_specific_board_file
+
 
 
 class RushHourEnv(Env):
     train_boards, test_boards = initialize_boards()
 
-    def __init__(self, num_of_vehicle: int, rewards=basic_reward, train=True):
+    def __init__(self, num_of_vehicle: int = 6, min_vehicles: int = 4, rewards=basic_reward, train=True):
         super().__init__()
         self.boards = RushHourEnv.train_boards if train else RushHourEnv.test_boards
         self.max_steps = 100 if train else 50
@@ -23,19 +23,21 @@ class RushHourEnv(Env):
         self.get_reward = rewards
         size = self.boards[0].row * self.boards[0].col
 
-        self.action_space = spaces.Discrete(num_of_vehicle * 4)
+        self.boards = RushHourEnv.train_boards if train else RushHourEnv.test_boards
+        self.max_steps = 200 if train else 100
+
+        self.board = None
+        self.state = None
+        self.num_steps = 0
+        self.state_history = []
+        self.vehicles_letter = []
+
+        self.action_space = spaces.Discrete(self.max_vehicles * 4)
         self.observation_space = spaces.Box(
             low=0, high=255, shape=(size,), dtype=np.uint8
         )
 
-        self.state = None
-        self.board = None
-        self.vehicles_letter = None
-        self.num_steps = 0
-        self.total_reward = 0
-        self.state_history = []
-
-    def reset(self, board=None, seed=None,options=None):
+     def reset(self, board=None, seed=None,options=None):
         self.board = deepcopy(choice(self.boards)) if board is None else deepcopy(board)
         self.vehicles_letter = self.board.get_all_vehicles_letter()
         self.num_steps = 0
@@ -45,7 +47,8 @@ class RushHourEnv(Env):
 
     def step(self, action):
         vehicle_str, move_str = self.parse_action(action)
-        vehicle = self.board.get_vehicle_by_letter(vehicle_str)
+        vehicle = self.board.get_vehicle_by_letter(
+            vehicle_str) if vehicle_str else None
 
         valid_move = False
         done = False
@@ -72,7 +75,7 @@ class RushHourEnv(Env):
         self.total_reward += reward
         self.state = current_state
         return self.state, reward, done, truncated, self._get_info()
-
+    
     def _get_info(self):
         """
         Ensures that info contains the 'action_mask' required by MaskablePPO.
@@ -96,7 +99,6 @@ class RushHourEnv(Env):
         vehicle_str = self.vehicles_letter[vehicle]
 
         return vehicle_str, move_str
-
 
 if __name__ == "__main__":
     env = RushHourEnv(num_of_vehicle=16)
