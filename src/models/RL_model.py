@@ -1,23 +1,24 @@
 import setup_path  # NOQA
-import torch
 from pathlib import Path
 
 from environments.rush_hour_env import RushHourEnv
 from environments.rush_hour_image_env import RushHourImageEnv
 from environments.evaluate import evaluate_model
-from environments.rewards import basic_reward, per_steps_reward
+# You can change to another reward here
+from environments.rewards import basic_reward
 
-from stable_baselines3 import PPO, DQN, A2C
+from stable_baselines3 import DQN, A2C
+from sb3_contrib.ppo_mask import MaskablePPO as PPO
 from stable_baselines3.common.env_checker import check_env
-from stable_baselines3.common.policies import ActorCriticCnnPolicy
 
 from utils.custom_logger import RushHourCSVLogger
-from models.early_stopping import EarlyStoppingSuccessRateCallback
+from models.early_stopping import EarlyStoppingRewardCallback
+
 from models.cnn_policy import RushHourCNN
+from stable_baselines3.common.policies import ActorCriticCnnPolicy
+
 from utils.config import MODEL_PATH, LOG_FILE_PATH, NUM_VEHICLES
 
-torch.autograd.set_detect_anomaly(True)
-torch.set_num_threads(1)
 
 
 class RLModel:
@@ -34,60 +35,59 @@ class RLModel:
 
         print(f"🧠 Initializing {self.model_name} model...")
 
+        # Select policy and CNN-specific kwargs if needed
         if self.cnn and self.model_name == "PPO":
             policy = ActorCriticCnnPolicy
-            policy_kwargs = {
-                "features_extractor_class": RushHourCNN,
-                "features_extractor_kwargs": {"features_dim": 64}
-            }
+            policy_kwargs = dict(
+                features_extractor_class=RushHourCNN,
+                features_extractor_kwargs=dict(features_dim=128)
+            )
         else:
             policy = "MlpPolicy"
-            policy_kwargs = {}
+            policy_kwargs = None
 
         self.model = model_class(
             policy,
-            env=self.env,
-            policy_kwargs=policy_kwargs,
-            verbose=1,
-            learning_rate=1e-4,
-            n_steps=256,
-            batch_size=32,
-            n_epochs=4,
-            gamma=0.99,
-            gae_lambda=0.95,
-            clip_range=0.2,
-            ent_coef=0.01,
-            max_grad_norm=0.5
+            self.env,
+            verbose=0,
+            policy_kwargs=policy_kwargs
         )
 
     def setup_logging(self):
-        Path(self.log_file).parent.mkdir(parents=True, exist_ok=True)
+        log_dir = Path(self.log_file).parent
+        log_dir.mkdir(parents=True, exist_ok=True)
 
     def train(self):
         print("📚 Training with memory-safe settings...")
+        if self.cnn:
+            window_size = 100
+        else:
+            window_size = 50
+        csv_logger = RushHourCSVLogger(log_path=self.log_file)
+        callbacks = [csv_logger]
 
-        callbacks = [RushHourCSVLogger(log_path=self.log_file)]
         if self.early_stopping:
-            callbacks.append(EarlyStoppingSuccessRateCallback(
-                window_size=100, success_threshold=0.9, verbose=1))
-
-        print("🟡 Beginning training with PPO.learn()")
-        torch.cuda.empty_cache()
+            early_stop = EarlyStoppingRewardCallback(
+                window_size=window_size,
+                reward_threshold=900,
+                verbose=1
+            )
+            callbacks.append(early_stop)
+            total_timesteps = 2_000_000 
+        else:
+            total_timesteps = 2_000_000
 
         self.model.learn(
-            total_timesteps=500_000,
-            callback=callbacks,
-            progress_bar=True
+            total_timesteps=total_timesteps,
+            callback=callbacks
         )
-
-        print("🟢 Training complete")
 
     def save(self):
         self.model.save(self.model_path)
-        print(f"💾 Model saved to {self.model_path}")
+        print(f"💾 Model saved to: {self.model_path}")
 
     def evaluate(self, test_env, episodes=None):
-        print("🚀 Evaluating on test boards...")
+        print("\n🚀 Evaluating on test boards...")
         model = self.model_class.load(self.model_path, env=test_env)
         evaluate_model(model, test_env, episodes)
 
@@ -95,31 +95,23 @@ class RLModel:
 def run(num_of_vehicle, model_class, early_stopping=False, cnn=False):
     print("🚀 Creating memory-optimized training environment...")
 
-    reward_fn = per_steps_reward if not cnn else basic_reward
-
     if cnn:
         train_env = RushHourImageEnv(
-            num_of_vehicle=num_of_vehicle,
-            train=True,
-            image_size=(128, 128),
-            rewards=reward_fn
+            num_of_vehicle=num_of_vehicle, train=True,
+            image_size=(128, 128), rewards=basic_reward
         )
         test_env = RushHourImageEnv(
-            num_of_vehicle=num_of_vehicle,
-            train=False,
-            image_size=(128, 128),
-            rewards=reward_fn
+            num_of_vehicle=num_of_vehicle, train=False,
+            image_size=(128, 128), rewards=basic_reward
         )
     else:
         train_env = RushHourEnv(
-            num_of_vehicle=num_of_vehicle,
-            train=True,
-            rewards=reward_fn
+            num_of_vehicle=num_of_vehicle, train=True,
+            rewards=basic_reward
         )
         test_env = RushHourEnv(
-            num_of_vehicle=num_of_vehicle,
-            train=False,
-            rewards=reward_fn
+            num_of_vehicle=num_of_vehicle, train=False,
+            rewards=basic_reward
         )
 
     check_env(test_env, warn=True)
@@ -141,9 +133,13 @@ def run(num_of_vehicle, model_class, early_stopping=False, cnn=False):
 
 
 if __name__ == "__main__":
+    # Example: PPO with CNN and early stopping
     run(
         num_of_vehicle=NUM_VEHICLES,
         model_class=PPO,
         early_stopping=True,
         cnn=True
     )
+    # Try other setups:
+    # run(NUM_VEHICLES, DQN, early_stopping=True, cnn=False)
+    # run(NUM_VEHICLES, A2C, early_stopping=True, cnn=False)

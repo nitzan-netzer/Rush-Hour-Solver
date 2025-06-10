@@ -2,22 +2,26 @@ from gymnasium import Env, spaces
 from copy import deepcopy
 from random import choice
 import numpy as np
+from gymnasium import Env, spaces
+
 
 from environments.board import Board
 from environments.rewards import basic_reward
 from environments.init_boards_from_database import initialize_boards, load_specific_board_file
 
 
+
 class RushHourEnv(Env):
-    train_boards, test_boards = load_specific_board_file(
-        filename="1000_cards_2_cars_1_trucks.json", input_folder="database")
+    train_boards, test_boards = initialize_boards()
 
     def __init__(self, num_of_vehicle: int = 6, min_vehicles: int = 4, rewards=basic_reward, train=True):
         super().__init__()
-
-        self.max_vehicles = num_of_vehicle
-        self.min_vehicles = min_vehicles
+        self.boards = RushHourEnv.train_boards if train else RushHourEnv.test_boards
+        self.max_steps = 100 if train else 50
+        num_of_vehicle = len(self.boards[0].get_all_vehicles_letter())
+        self.num_of_vehicle = num_of_vehicle
         self.get_reward = rewards
+        size = self.boards[0].row * self.boards[0].col
 
         self.boards = RushHourEnv.train_boards if train else RushHourEnv.test_boards
         self.max_steps = 200 if train else 100
@@ -30,25 +34,15 @@ class RushHourEnv(Env):
 
         self.action_space = spaces.Discrete(self.max_vehicles * 4)
         self.observation_space = spaces.Box(
-            low=0, high=255, shape=(36,), dtype=np.uint8
+            low=0, high=255, shape=(size,), dtype=np.uint8
         )
 
-        print(f"num_vehicles: {self.max_vehicles}")
-
-    def reset(self, board=None, seed=None):
-        while True:
-            b = deepcopy(choice(self.boards)
-                         ) if board is None else deepcopy(board)
-            vehicles = b.get_all_vehicles_letter()
-            if self.min_vehicles <= len(vehicles) <= self.max_vehicles:
-                break
-
-        self.board = b
-        self.vehicles_letter = vehicles
+     def reset(self, board=None, seed=None,options=None):
+        self.board = deepcopy(choice(self.boards)) if board is None else deepcopy(board)
+        self.vehicles_letter = self.board.get_all_vehicles_letter()
         self.num_steps = 0
+        self.total_reward = 0
         self.state = self.board.get_board_flatten().astype(np.uint8)
-        self.state_history = [tuple(self.state)]
-
         return self.state, self._get_info()
 
     def step(self, action):
@@ -65,7 +59,6 @@ class RushHourEnv(Env):
 
         self.num_steps += 1
         truncated = self.num_steps >= self.max_steps
-
         current_state = self.board.get_board_flatten().astype(np.uint8)
 
         reward = self.get_reward(
@@ -79,34 +72,38 @@ class RushHourEnv(Env):
             self.num_steps,
             max_steps=self.max_steps
         )
-
-        self.state_history.append(tuple(current_state))
+        self.total_reward += reward
         self.state = current_state
-
         return self.state, reward, done, truncated, self._get_info()
+    
+    def _get_info(self):
+        """
+        Ensures that info contains the 'action_mask' required by MaskablePPO.
+        """
+        action_mask = self.board.get_all_valid_actions()
+     
+        return {
+            "red_car_escaped": self.board.game_over(),
+            "action_mask": action_mask,
+            "total_reward": self.total_reward
 
-    def parse_action(self, action):
-        num_vehicles = len(self.vehicles_letter)
-        max_action = num_vehicles * 4
-        if action >= max_action or num_vehicles == 0:
-            return None, None  # Safe fallback
-
-        vehicle = action // 4
-        move = action % 4
-        move_str = ["U", "D", "L", "R"][move]
-        return self.vehicles_letter[vehicle], move_str
+        }
 
     def render(self):
         print(self.board)
 
-    def _get_info(self):
-        return {
-            "non_empty_cells": np.count_nonzero(self.board.board != ""),
-            "red_car_escaped": self.board.game_over()
-        }
+    def parse_action(self, action):
+        vehicle = action // 4
+        move = action % 4
+        move_str = ["U", "D", "L", "R"][move]
+        vehicle_str = self.vehicles_letter[vehicle]
 
+        return vehicle_str, move_str
 
 if __name__ == "__main__":
-    env = RushHourEnv(num_of_vehicle=6)
-    obs, _ = env.reset()
+    env = RushHourEnv(num_of_vehicle=16)
+    my_board = env.boards[0]
+    obs, info = env.reset(my_board)
+    print("Valid action indices:")
+    print(np.nonzero(info["action_mask"])[0])
     env.render()

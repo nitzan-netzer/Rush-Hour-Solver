@@ -9,8 +9,7 @@ import json
 import numpy as np
 
 from environments.vehicles import RedCar, create_vehicle
-
-
+from algorithms.utils import get_solution,get_total_steps
 class Board:
     """
     Represents the game board for the vehicle puzzle game.
@@ -32,6 +31,8 @@ class Board:
         """
         self.row = row
         self.col = col
+        self.win_x = (self.row-1)//2
+        self.win_y = self.col-1
         self.reset(init_red_car)
 
     def reset(self, init_red_car=True):
@@ -40,8 +41,21 @@ class Board:
         """
         self.vehicles = []
         self.board = np.empty((self.row, self.col), dtype=str)
+        self.num_of_vehicles = 0
         if init_red_car:
-            self.add_vehicle(RedCar(), 2, 4)
+            self.add_vehicle(RedCar(), self.win_x, self.win_y-1)
+        self.vehicles_letter = None
+        self.is_updated = False
+        self.min_steps = 0
+        self.heuristic = 0
+
+    def update_heuristic_and_min_steps(self,func):
+        if not self.is_updated:
+            solution = func(self)
+            solution_original = get_solution(solution)
+            self.heuristic = self.get_heuristic()
+            self.min_steps = get_total_steps(solution_original)
+            self.is_updated = True
 
     def add_vehicle(self, vehicle, row: int, col: int):
         """
@@ -59,6 +73,9 @@ class Board:
         vehicle.row = row
         vehicle.col = col
         self.vehicles.append(vehicle)
+        self.num_of_vehicles += 1
+        self.is_updated = False
+
 
     def check_add_vehicle(self, vehicle, row: int, col: int, uniqueness=False):
         """
@@ -132,6 +149,7 @@ class Board:
                 self.board[
                     vehicle.row + vehicle.length - 1, vehicle.col
                 ] = vehicle.letter
+        self.is_updated = False
         return True
 
     def empty_space(self, row: int, col: int) -> bool:
@@ -156,10 +174,10 @@ class Board:
         Returns:
             bool: True if the red car is at the winning position, False otherwise.
         """
-        return self.board[2, 5] != "X" and self.board[2, 5] != ""
+        return self.board[self.win_x, self.win_y] != "X" and self.board[self.win_x, self.win_y] != ""
 
     def game_over(self) -> bool:
-        return self.board[2, 5] == "X"
+        return self.board[self.win_x, self.win_y] == "X"
 
     def get_vehicle_by_letter(self, letter: str):
         """
@@ -197,7 +215,14 @@ class Board:
         Returns:
             dict: The board state as a dictionary.
         """
-        json_board: dict = {"row": self.row, "col": self.col, "vehicles": []}
+        json_board: dict = {
+            "row": self.row, 
+            "col": self.col,
+            "heuristic": self.heuristic, 
+            "min_steps": self.min_steps,
+            "is_updated": self.is_updated,
+            "vehicles": []
+        }
         for vehicle in self.vehicles:
             json_board["vehicles"].append(
                 {
@@ -206,6 +231,7 @@ class Board:
                     "row": vehicle.row,
                     "col": vehicle.col,
                     "direction": vehicle.direction,
+                 
                 }
             )
 
@@ -226,7 +252,15 @@ class Board:
             vehicle = create_vehicle(vehicle_data)
             board.add_vehicle(
                 vehicle, vehicle_data["row"], vehicle_data["col"])
-
+            
+        if "heuristic" in json_board:
+            board.heuristic = json_board["heuristic"]
+            board.min_steps = json_board["min_steps"]
+            board.is_updated = json_board["is_updated"]
+        else:
+            board.is_updated = False
+            board.min_steps = 0
+            board.heuristic = 0
         return board
 
     def save(self, filename: str):
@@ -294,23 +328,51 @@ class Board:
 
         return board_equal and vehicles_len_equal
 
-    def get_all_moves(self):
+    def get_all_valid_actions(self):
         """
         Get all possible moves for all vehicles on the board.
 
         Returns:
             dict: A dictionary mapping vehicle letters to possible moves.
         """
-        moves = []
+        num_of_move = self.num_of_vehicles *4
+        valid_actions = np.zeros(num_of_move, dtype=bool)
         for vehicle in self.vehicles:
-            if vehicle.direction == "RL":
-                moves.append((vehicle.letter, "L"))
-                moves.append((vehicle.letter, "R"))
-            else:
-                moves.append((vehicle.letter, "U"))
-                moves.append((vehicle.letter, "D"))
-        return tuple(moves)
+            vehicle_moves = vehicle.get_possible_moves(self)
+            if vehicle_moves:
+                if len (vehicle_moves) == 1:
+                    reverse_action = self.reverse_action(vehicle.letter, vehicle_moves[0])
+                    valid_actions[reverse_action] = True
+                else:
+                    reverse_action_1 = self.reverse_action(vehicle.letter, vehicle_moves[0])
+                    reverse_action_2 = self.reverse_action(vehicle.letter, vehicle_moves[1])
+                    valid_actions[reverse_action_1] = True
+                    valid_actions[reverse_action_2] = True
+        return valid_actions
+    
+    def reverse_action(self, vehicle_letter: str, move_direction: str) -> int:
+        """
+        Reverse the action of moving a vehicle in the specified direction.
 
+        Args:
+            vehicle_letter (str): The letter of the vehicle to reverse.
+            move_direction (str): The direction to reverse ("L", "R", "U", "D").
+
+        Returns:
+            int: The action index corresponding to the reversed move.
+        """
+        vehicles_letter = self.get_all_vehicles_letter()
+        index = vehicles_letter.index(vehicle_letter)
+        if move_direction == "U":
+            return index * 4 + 0
+        elif move_direction == "D":
+            return index * 4 + 1
+        elif move_direction == "L":
+            return index * 4 + 2
+        elif move_direction == "R":
+            return index * 4 + 3
+        else:
+            raise ValueError(f"Invalid move direction: {move_direction}")
     def get_board_flatten(self):
         """
         Get the board state as a flattened numpy array.
@@ -338,7 +400,33 @@ class Board:
         """"
         Get all vehicle letters on the board.
         """
+        if self.vehicles_letter is None:
+            vehicles_str = [vehicle.letter for vehicle in self.vehicles]
+            vehicles_str.sort()
+            self.vehicles_letter = vehicles_str
+        return self.vehicles_letter
     
-        vehicles_str = [vehicle.letter for vehicle in self.vehicles]
-        vehicles_str.sort()
-        return vehicles_str
+
+    def get_heuristic(self) -> int:
+        """
+        Calculate the heuristic value for the current board state.
+        The heuristic is based on:
+        1. Distance of red car from exit
+        2. Number of blocking vehicles
+        3. Number of moves needed to clear blocking vehicles
+        """
+        red_car = self.get_vehicle_by_letter("X")
+        if not red_car:
+            return float('inf')
+        
+        # Distance from red car to exit (column 5)
+        distance_to_exit = self.col-1 - (red_car.col + red_car.length)
+    
+        # Count blocking vehicles
+        blocking_vehicles = 0
+        for col in range(red_car.col + red_car.length, self.col):
+            if self.board[red_car.row, col] != "":
+                blocking_vehicles += 1
+        
+        # Each blocking vehicle needs at least one move to clear
+        return distance_to_exit + blocking_vehicles 

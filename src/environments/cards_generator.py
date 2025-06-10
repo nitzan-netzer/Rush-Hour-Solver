@@ -10,12 +10,12 @@ from datetime import datetime
 from tqdm import tqdm
 
 import setup_path  # NOQA
-from environments.board_random import BoardRandom
-from GUI.board_to_image import (car_colors, save_board_to_image,
-                                         truck_colors)
-from environments.calculate_difficulty import calculate_difficulty
-from environments.vehicles import Car, Truck
+from algorithms.ASTAR import astar
 
+from environments.board_random import BoardRandom
+from environments.vehicles import Car, Truck
+from GUI.board_to_image import car_colors, save_board_to_image, truck_colors
+from utils.config import BOARD_SIZE
 DIRECTIONS = ["UD", "RL"]
 
 
@@ -41,7 +41,7 @@ def cards_generator(
     before random moves, it guarantee board is can be solved.
     """
     boards: list[BoardRandom] = []
-    board = BoardRandom()
+    board = BoardRandom(row=BOARD_SIZE,col=BOARD_SIZE)
     hashset = set()
 
     with tqdm(total=num_cards, desc="Generating Boards") as pbar:
@@ -67,9 +67,10 @@ def cards_generator(
 
             # Ensure the red car not win the game immediately
             if not failed:
-                difficulty = calculate_difficulty(board)
+                difficulty = board.get_heuristic()
                 board_hash = board.get_hash()
                 if difficulty > threshold and not board_hash in hashset:
+                    #board.update_heuristic_and_min_steps(astar)
                     boards.append(deepcopy(board))
                     hashset.add(board_hash)
                     pbar.update(1)
@@ -79,48 +80,26 @@ def cards_generator(
 
 def save(boards, path, save_images=False):
     """
-    Save the board to a JSON file.
+    Save the board to a JSON file
     """
     filename = f"{path}.json"
     BoardRandom.save_multiple_boards(boards, filename)
     if save_images:
         os.makedirs(path, exist_ok=True)
         for i, board in enumerate(boards):
-            save_board_to_image(board, rf"{
-                path}/board-{i}.png")
+            save_board_to_image(board, rf"{path}/board-{i}.png")
             if i == 10:
                 break
 
-
-def save_config(num_cards:int ,num_cars:int, num_trucks:int,vehicles_letter:list[str]):
-    """
-    Save the configuration to a JSON file.
-    """
+def main():
+    num_cards = 100
+    num_trucks = 4
+    num_cars = 11
+    num_step = 10
+    threshold = 1
+    boards = cards_generator(num_cards, num_cars, num_trucks, num_step, threshold,shuffle=True)
     filename = f"{num_cards}_cards_{num_cars}_cars_{num_trucks}_trucks"
     path = f"database/{filename}"
-    config_path = f"database/config_{filename}.json"
-    config = {
-        "path": path+".json",
-        "num_cards": num_cards,
-        "num_cars": num_cars,
-        "num_trucks": num_trucks,
-        "vehicles_letter": vehicles_letter,
-    }
-    with open(config_path, "w") as f:
-        json.dump(config, f, indent=4)
-    
-    return path
-def main():
-    num_cards = 1000
-    num_trucks = 1
-    num_step = 20
-    threshold = 1
-    for num_cars in range(2, 5):
-        boards = cards_generator(
-            num_cards, num_cars, num_trucks, num_step, threshold)
-        vehicles_letter = boards[0].get_all_vehicles_letter()
-        path = save_config(num_cards, num_cars, num_trucks, vehicles_letter)
-        save(boards, path, save_images=True)    
-
+    save(boards, path, save_images=True)    
 if __name__ == "__main__":
     main()

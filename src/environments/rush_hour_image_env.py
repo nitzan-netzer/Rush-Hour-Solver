@@ -33,6 +33,7 @@ class RushHourImageEnv(Env):
         self.board = None
         self.vehicles_letter = sorted(
             list({v.letter for b in self.boards for v in b.vehicles}))
+
         self.num_steps = 0
         self.state_history = []
 
@@ -41,6 +42,7 @@ class RushHourImageEnv(Env):
     def reset(self, board=None, seed=None):
         self.board = deepcopy(
             choice(self.boards)) if board is None else deepcopy(board)
+        self.vehicles_letter = self.board.get_all_vehicles_letter()
         self.num_steps = 0
         self.state_history = []
 
@@ -98,7 +100,7 @@ class RushHourImageEnv(Env):
         move_str = ["U", "D", "L", "R"][move]
         try:
             vehicle_str = self.vehicles_letter[vehicle]
-        except IndexError:
+        except IndexError: # if send wrong num_of_vehicle 
             return None, None
         return vehicle_str, move_str
 
