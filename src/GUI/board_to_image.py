@@ -77,8 +77,8 @@ def generate_board_image(board, scale: int = 50, draw_letters: bool = False) -> 
                     0, 0, 0), font=font, anchor="mm")
 
     # Highlight the edge to the right of (2, 5) with white color
-    edge_row = 2 * scale  # Top of row 2 in pixels
-    edge_col = (5 + 1) * scale  # Right edge of column 5 in pixels
+    edge_row = board.win_x * scale  # Top of row 2 in pixels
+    edge_col = (board.win_y+1) * scale  # Right edge of column 5 in pixels
     cords = [(edge_col, edge_row), (edge_col, edge_row + scale)]
     draw.line(cords, fill=WHITE, width=5)
 

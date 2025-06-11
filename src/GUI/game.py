@@ -7,13 +7,12 @@ from copy import deepcopy
 from random import choice
 from algorithms.BFS import bfs
 from algorithms.ASTAR import astar
-
+from utils.config import BOARD_SIZE
 # Initialize Pygame
 pygame.init()
 
 # Constants
 CELL_SIZE = 80
-BOARD_SIZE = 6
 WINDOW_SIZE = BOARD_SIZE * CELL_SIZE
 MARGIN = 50
 TOTAL_SIZE = WINDOW_SIZE + 2 * MARGIN
@@ -219,8 +218,8 @@ class RushHourGame:
             self.screen.blit(text, text_rect)
         
         # Draw exit as a stripe, moved right one tile and up half a tile
-        exit_x = MARGIN + 6 * CELL_SIZE  # Move right one tile
-        exit_y = MARGIN + 2 * CELL_SIZE  # Move up half a tile (remove + CELL_SIZE // 2 - 5)
+        exit_x = MARGIN + (self.board.win_y+1) * CELL_SIZE  # Move right one tile
+        exit_y = MARGIN + self.board.win_x * CELL_SIZE  # Move up half a tile (remove + CELL_SIZE // 2 - 5)
         pygame.draw.rect(self.screen, BLACK,
                         (exit_x,
                          exit_y,
@@ -347,11 +346,9 @@ def play_game(all_boards,initial_board=None):
 
 
 if __name__ == "__main__":
-    boards = Board.load_multiple_boards("database/50_cards_7_cars_3_trucks.json")
-    card1 = Board.load("database/original/cards/card1.json")
-    card2 = Board.load("database/original/cards/card2.json")
-    card3 = Board.load("database/original/cards/card3.json")
-    card4 = Board.load("database/original/cards/card4.json")
-    card5 = Board.load("database/original/cards/card5.json")
-    #play_game(boards,card1)
-    play_game(boards)
+    print("Starting Rush Hour Game...")
+    boards_8x8 = Board.load_multiple_boards(r"database\8x8\10_cards_10_cars_4_trucks.json")
+    boards_10x10 = Board.load_multiple_boards(r"database\10x10\10_cards_10_cars_4_trucks.json")
+
+    play_game(boards_8x8,boards_8x8[0])
+    #play_game(boards_10x10,boards_10x10[0])

@@ -2,28 +2,27 @@ from stable_baselines3.common.callbacks import BaseCallback
 from collections import deque
 
 
-class EarlyStoppingSuccessRateCallback(BaseCallback):
-    def __init__(self, window_size=100, success_threshold=0.9, verbose=1):
+class EarlyStoppingRewardCallback(BaseCallback):
+    def __init__(self, window_size=100, reward_threshold=900, verbose=1):
         super().__init__(verbose)
         self.window_size = window_size
-        self.success_threshold = success_threshold
-        self.success_history = deque(maxlen=window_size)
+        self.reward_threshold = reward_threshold
+        self.reward_history = deque(maxlen=window_size)
 
     def _on_step(self) -> bool:
         done = self.locals["dones"][0]
         info = self.locals["infos"][0]
-
+        reward = info.get("total_reward")
         if done:
-            escaped = info.get("red_car_escaped", False)
-            self.success_history.append(1 if escaped else 0)
+            self.reward_history.append(reward)
 
-            if len(self.success_history) == self.window_size:
-                success_rate = sum(self.success_history) / self.window_size
+            if len(self.reward_history) == self.window_size:
+                avg_reward = sum(self.reward_history) / self.window_size
                 if self.verbose:
                     print(
-                        f"✅ Success rate (last {self.window_size} episodes): {success_rate:.2f}")
-                if success_rate >= self.success_threshold:
-                    print("🛑 Early stopping: success rate threshold reached!")
+                        f"💰 Average reward (last {self.window_size} episodes): {avg_reward:.2f}")
+                if avg_reward >= self.reward_threshold:
+                    print("🛑 Early stopping: reward threshold reached!")
                     return False  # Stop training
 
         return True
