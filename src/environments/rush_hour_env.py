@@ -18,7 +18,7 @@ class RushHourEnv(Env):
         super().__init__()
         self.boards = RushHourEnv.train_boards if train else RushHourEnv.test_boards
         self.max_steps = 100 if train else 50
-        num_of_vehicle = len(self.boards[0].get_all_vehicles_letter())
+        #num_of_vehicle = len(self.boards[0].get_all_vehicles_letter())
         self.num_of_vehicle = num_of_vehicle
         self.get_reward = rewards
         size = self.boards[0].row * self.boards[0].col
@@ -77,7 +77,7 @@ class RushHourEnv(Env):
         """
         Ensures that info contains the 'action_mask' required by MaskablePPO.
         """
-        action_mask = self.board.get_all_valid_actions()
+        action_mask = self.board.get_all_valid_actions(self.num_of_vehicle)
      
         return {
             "red_car_escaped": self.board.game_over(),

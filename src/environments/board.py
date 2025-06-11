@@ -328,7 +328,7 @@ class Board:
 
         return board_equal and vehicles_len_equal
 
-    def get_all_valid_actions(self):
+    def get_all_valid_actions(self,num_of_vehicles: int = 6) -> np.ndarray:
         """
         Get all possible moves for all vehicles on the board.
 

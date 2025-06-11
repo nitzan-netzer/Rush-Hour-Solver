@@ -8,9 +8,9 @@ import time
 import numpy as np
 from environments.rush_hour_env import RushHourEnv
 from PIL import Image, ImageDraw
-from stable_baselines3 import PPO
-from torchviz import make_dot
-import torch
+from sb3_contrib.ppo_mask import MaskablePPO as PPO
+#from torchviz import make_dot
+#import torch
 
 st.set_page_config(page_title="Rush Hour Solver", layout="wide")
 st.markdown("""
@@ -76,20 +76,21 @@ if "initial_obs" not in st.session_state:
 
 
 st.title("Rush Hour Puzzle Solver 🚗🚗🚗🚗🚗")
-num_vehicles = st.sidebar.slider("Number of vehicles", 3, 6, 6)
+num_vehicles = st.sidebar.slider("Number of vehicles", 4, 6, 6)
 max_steps = st.sidebar.slider("Maximum steps", 10, 100, 50)
 step_delay = st.sidebar.slider("Animation speed (sec)", 0.05, 1.0, 0.2)
 
 if st.sidebar.button("Start 👽"):
-    env = RushHourEnv(num_of_vehicle=num_vehicles, train=False)
-    obs, _ = env.reset()
+    env = RushHourEnv(num_of_vehicle=6, train=False)
+    obs, info = env.reset_number_of_vehicles(num_vehicles)
+    st.session_state.info = info
     st.session_state.env = env
     st.session_state.started = True
     st.session_state.initial_obs = obs
     st.session_state.initial_board = env.board.board.copy()
     st.session_state.initial_img = generate_board_image(st.session_state.initial_board)
 
-    model_path = "./models_zip/ppo_rush_hour_model.zip"
+    model_path = "./models_zip/MaskablePPO_MLP_6x6.zip"
     if os.path.exists(model_path):
         st.session_state.model = PPO.load(model_path)  
         #  סוג הרשת והפרמטרים שלה
@@ -109,6 +110,7 @@ if st.session_state.started and st.session_state.initial_img:
 if st.session_state.started and st.session_state.model:
     if st.button("Solve Now 🔍"):
         with st.spinner("Solving..."):
+            info = st.session_state.info
             env = st.session_state.env
             model = st.session_state.model
 
@@ -119,8 +121,9 @@ if st.session_state.started and st.session_state.model:
             solved = False
 
             for step in range(max_steps):
-                action, _ = model.predict(obs, deterministic=False)
-                obs, reward, done, truncated, _ = env.step(action)
+                action_mask = info.get("action_mask")
+                action, _ = model.predict(obs, action_masks=action_mask)
+                obs, reward, done, truncated, info = env.step(action)
 
                 board_matrix = env.board.board
                 img = generate_board_image(board_matrix)
