@@ -335,7 +335,7 @@ class Board:
         Returns:
             dict: A dictionary mapping vehicle letters to possible moves.
         """
-        num_of_move = self.num_of_vehicles *4
+        num_of_move = num_of_vehicles *4
         valid_actions = np.zeros(num_of_move, dtype=bool)
         for vehicle in self.vehicles:
             vehicle_moves = vehicle.get_possible_moves(self)
