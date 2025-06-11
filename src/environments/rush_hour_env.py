@@ -98,10 +98,32 @@ class RushHourEnv(Env):
         return vehicle_str, move_str
 
 
+    def reset_number_of_vehicles(self, num_of_vehicle):
+        """
+        Reset the environment with a specific number of vehicles.
+        """
+        board = choice(self.boards)
+        count = 0
+        while board.num_of_vehicles != num_of_vehicle :
+            count += 1
+            board = choice(self.boards)
+            if count > 100:
+                raise ValueError(f"No board found with {num_of_vehicle} vehicles.")
+        return self.reset(board)
+
 if __name__ == "__main__":
     env = RushHourEnv(num_of_vehicle=16)
-    my_board = env.boards[0]
-    obs, info = env.reset(my_board)
-    print("Valid action indices:")
-    print(np.nonzero(info["action_mask"])[0])
+   
+    obs, info = env.reset_number_of_vehicles(4)
     env.render()
+   
+    obs, info = env.reset_number_of_vehicles(5)
+    env.render()
+   
+    obs, info = env.reset_number_of_vehicles(6)
+    env.render()
+
+    obs, info = env.reset_number_of_vehicles(7)
+    env.render()
+   
+   
