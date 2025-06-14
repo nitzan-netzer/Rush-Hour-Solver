@@ -12,7 +12,7 @@ def initialize_boards(input_folder=None):
     """
     if input_folder is None:
         file_path = Path(__file__)
-        input_folder = file_path.parent.parent.parent / "database"
+        input_folder = file_path.parent.parent.parent / "database/generated"
         input_folder = str(input_folder)
 
     boards = []
@@ -27,7 +27,7 @@ def initialize_boards(input_folder=None):
     return train_test_split(boards, test_size=0.2, random_state=42)
 
 
-def load_specific_board_file(filename="1000_cards_4_cars_1_trucks.json", input_folder="database"):
+def load_specific_board_file(filename="1000_cards_4_cars_1_trucks.json", input_folder="database/generated"):
     """
     Load a specific board JSON file and return a train/test split.
     """

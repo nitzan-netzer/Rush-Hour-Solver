@@ -61,7 +61,7 @@ def main():
     runs_to_train = [
         # PPO CNN
         #(PPO, True, True),   # PPO-CNN + EarlyStopping
-        #(PPO, True, False),  # PPO-CNN + No EarlyStopping
+        (PPO, True, False),  # PPO-CNN + No EarlyStopping
         # PPO MLP
         # (PPO, False, True),  # PPO-MLP + EarlyStopping
         (PPO, False, False),  # PPO-MLP + No EarlyStopping

@@ -2,7 +2,6 @@ import csv
 from stable_baselines3.common.callbacks import BaseCallback
 from pathlib import Path
 
-
 class RushHourCSVLogger(BaseCallback):
     def __init__(self, log_path, verbose=0):
         super().__init__(verbose)
@@ -14,8 +13,9 @@ class RushHourCSVLogger(BaseCallback):
         # Initialize the CSV file with headers
         with open(self.log_path, mode='w', newline='') as file:
             writer = csv.writer(file)
-            writer.writerow(
-                ["episode", "timesteps", "reward", "red_car_escaped"])
+            writer.writerow([
+                "episode", "timesteps", "reward", "red_car_escaped", "steps_to_solve"
+            ])
 
     def _on_step(self) -> bool:
         reward = self.locals["rewards"][0]
@@ -26,18 +26,25 @@ class RushHourCSVLogger(BaseCallback):
             total_reward = sum(self.episode_rewards)
             info = self.locals.get("infos", [{}])[0]
             escaped = info.get("red_car_escaped", False)
+            steps_to_solve = len(self.episode_rewards) if escaped else ""
 
-            # Log to CSV
             try:
                 with open(self.log_path, mode='a', newline='') as file:
                     writer = csv.writer(file)
-                    writer.writerow(
-                        [self.episode_count, self.num_timesteps, total_reward, int(escaped)])
+                    writer.writerow([
+                        self.episode_count,
+                        self.num_timesteps,
+                        total_reward,
+                        int(escaped),
+                        steps_to_solve
+                    ])
             except Exception as e:
                 print(f"❌ Failed to write log: {e}")
 
             print(
-                f"[Episode {self.episode_count}] Reward: {total_reward:.2f} | Escaped: {escaped}")
+                f"[Episode {self.episode_count}] Reward: {total_reward:.2f} | "
+                f"Escaped: {escaped} | Steps: {steps_to_solve}"
+            )
 
             self.episode_count += 1
             self.episode_rewards = []
