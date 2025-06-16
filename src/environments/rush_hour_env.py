@@ -8,11 +8,11 @@ from gymnasium import Env, spaces
 import setup_path  # NOQA
 from environments.board import Board
 from environments.rewards import basic_reward
-from environments.init_boards_from_database import initialize_boards
+from environments.init_boards_from_database import initialize_boards, load_specific_board_file
 
 
 class RushHourEnv(Env):
-    train_boards, test_boards = initialize_boards()
+    train_boards, test_boards = load_specific_board_file()
 
     def __init__(self, num_of_vehicle: int, rewards=basic_reward, train=True):
         super().__init__()

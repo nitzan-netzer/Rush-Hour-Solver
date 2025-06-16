@@ -1,4 +1,5 @@
 import time
+import sys
 from pathlib import Path
 from stable_baselines3 import DQN, A2C
 from sb3_contrib.ppo_mask import MaskablePPO as PPO
@@ -53,6 +54,7 @@ def mask_fn(env):
 
 
 def main():
+    print(sys.executable)
     start_time = time.time()
     logs_files = []
     models_paths = []
@@ -60,8 +62,8 @@ def main():
 
     runs_to_train = [
         # PPO CNN
-        #(PPO, True, True),   # PPO-CNN + EarlyStopping
-        #(PPO, True, False),  # PPO-CNN + No EarlyStopping
+        (PPO, True, True),   # PPO-CNN + EarlyStopping
+        (PPO, True, False),  # PPO-CNN + No EarlyStopping
         # PPO MLP
         (PPO, False, True),  # PPO-MLP + EarlyStopping
         (PPO, False, False),  # PPO-MLP + No EarlyStopping
