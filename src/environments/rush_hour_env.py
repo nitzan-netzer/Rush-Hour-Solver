@@ -7,14 +7,14 @@ from gymnasium import Env, spaces
 
 import setup_path  # NOQA
 from environments.board import Board
-from environments.rewards import basic_reward
+from environments.rewards import basic_reward, valid_moves_reward
 from environments.init_boards_from_database import initialize_boards, load_specific_board_file
 
 
 class RushHourEnv(Env):
     train_boards, test_boards = load_specific_board_file()
 
-    def __init__(self, num_of_vehicle: int, rewards=basic_reward, train=True):
+    def __init__(self, num_of_vehicle: int, rewards=valid_moves_reward, train=True):
         super().__init__()
         self.boards = RushHourEnv.train_boards if train else RushHourEnv.test_boards
         self.max_steps = 100 if train else 50
@@ -35,8 +35,9 @@ class RushHourEnv(Env):
         self.total_reward = 0
         self.state_history = []
 
-    def reset(self, board=None, seed=None,options=None):
-        self.board = deepcopy(choice(self.boards)) if board is None else deepcopy(board)
+    def reset(self, board=None, seed=None, options=None):
+        self.board = deepcopy(
+            choice(self.boards)) if board is None else deepcopy(board)
         self.vehicles_letter = self.board.get_all_vehicles_letter()
         self.num_steps = 0
         self.total_reward = 0
@@ -78,7 +79,7 @@ class RushHourEnv(Env):
         Ensures that info contains the 'action_mask' required by MaskablePPO.
         """
         action_mask = self.board.get_all_valid_actions()
-     
+
         return {
             "red_car_escaped": self.board.game_over(),
             "action_mask": action_mask,
@@ -97,33 +98,32 @@ class RushHourEnv(Env):
 
         return vehicle_str, move_str
 
-
     def reset_number_of_vehicles(self, num_of_vehicle):
         """
         Reset the environment with a specific number of vehicles.
         """
         board = choice(self.boards)
         count = 0
-        while board.num_of_vehicles != num_of_vehicle :
+        while board.num_of_vehicles != num_of_vehicle:
             count += 1
             board = choice(self.boards)
             if count > 100:
-                raise ValueError(f"No board found with {num_of_vehicle} vehicles.")
+                raise ValueError(
+                    f"No board found with {num_of_vehicle} vehicles.")
         return self.reset(board)
+
 
 if __name__ == "__main__":
     env = RushHourEnv(num_of_vehicle=16)
-   
+
     obs, info = env.reset_number_of_vehicles(4)
     env.render()
-   
+
     obs, info = env.reset_number_of_vehicles(5)
     env.render()
-   
+
     obs, info = env.reset_number_of_vehicles(6)
     env.render()
 
     obs, info = env.reset_number_of_vehicles(7)
     env.render()
-   
-   

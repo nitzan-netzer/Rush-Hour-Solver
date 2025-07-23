@@ -20,7 +20,6 @@ from stable_baselines3.common.policies import ActorCriticCnnPolicy
 from utils.config import MODEL_PATH, LOG_FILE_PATH, NUM_VEHICLES
 
 
-
 class RLModel:
     def __init__(self, model_class, env, model_path, log_file,
                  early_stopping=True, cnn=False):
@@ -73,9 +72,9 @@ class RLModel:
                 verbose=1
             )
             callbacks.append(early_stop)
-            total_timesteps = 2_000_000 
+            total_timesteps = 500_000
         else:
-            total_timesteps = 2_000_000
+            total_timesteps = 500_000
 
         self.model.learn(
             total_timesteps=total_timesteps,
