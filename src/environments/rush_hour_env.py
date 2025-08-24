@@ -37,7 +37,7 @@ class RushHourEnv(Env):
             low=0, high=255, shape=(size,), dtype=np.uint8
         )
 
-     def reset(self, board=None, seed=None,options=None):
+    def reset(self, board=None, seed=None,options=None):
         self.board = deepcopy(choice(self.boards)) if board is None else deepcopy(board)
         self.vehicles_letter = self.board.get_all_vehicles_letter()
         self.num_steps = 0
