@@ -134,7 +134,7 @@ if st.session_state.started and st.session_state.model:
                     solved = True
                     break
 
-            st.markdown(f"## ✅ Solved: {'Yes' if solved else 'No'} in {len(images)} steps")
+            st.markdown(f"## {'✅' if solved else '❌'} Solved: {'Yes' if solved else 'No'} in {len(images)} steps")
             st.markdown(f"### 🧮 Total Reward: `{sum(rewards):.2f}`")
 
             st.markdown("### Animation 🎞️ ")

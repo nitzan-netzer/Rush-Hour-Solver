@@ -32,7 +32,7 @@ class RushHourEnv(Env):
         self.state_history = []
         self.vehicles_letter = []
 
-        self.action_space = spaces.Discrete(self.max_vehicles * 4)
+        self.action_space = spaces.Discrete(self.num_of_vehicle * 4)
         self.observation_space = spaces.Box(
             low=0, high=255, shape=(size,), dtype=np.uint8
         )
