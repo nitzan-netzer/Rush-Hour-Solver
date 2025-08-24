@@ -83,9 +83,10 @@ def run_visualizer(model, env, record=False, output_video="videos/rush_hour_solu
                 return
 
         action_mask = info.get("action_mask")
-        action, _ = model.predict(obs, action_masks=action_mask)
+        #action, _ = model.predict(obs, action_masks=action_mask)
+        action, _ = model.predict(obs)
         obs, reward, done, truncated, info = env.step(action)
-        print(f"Step {env.num_steps}: reward: {reward}")
+        #print(f"Step {env.num_steps}: reward: {reward}")
 
         if hasattr(env, "board"):
             draw_board(screen, env.board, font)

@@ -36,6 +36,7 @@ class RushHourEnv(Env):
         self.state_history = []
 
     def reset(self, board=None, seed=None,options=None):
+
         self.board = deepcopy(choice(self.boards)) if board is None else deepcopy(board)
         self.vehicles_letter = self.board.get_all_vehicles_letter()
         self.num_steps = 0

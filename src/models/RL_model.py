@@ -1,30 +1,34 @@
-import setup_path  # NOQA
 from pathlib import Path
 
-from environments.rush_hour_env import RushHourEnv
-from environments.rush_hour_image_env import RushHourImageEnv
+from gymnasium.wrappers import TransformObservation
+from stable_baselines3 import A2C, DQN, PPO
+#from sb3_contrib.ppo_mask import MaskablePPO as PPO
+from stable_baselines3.common.env_checker import check_env
+from stable_baselines3.common.policies import ActorCriticCnnPolicy
+
+import setup_path  # NOQA
 from environments.evaluate import evaluate_model
 # You can change to another reward here
 from environments.rewards import basic_reward
-
-from stable_baselines3 import DQN, A2C
-from sb3_contrib.ppo_mask import MaskablePPO as PPO
-from stable_baselines3.common.env_checker import check_env
-
-from utils.custom_logger import RushHourCSVLogger
-from models.early_stopping import EarlyStoppingRewardCallback
-
+from environments.rush_hour_env import RushHourEnv
+from environments.rush_hour_image_env import RushHourImageEnv
 from models.cnn_policy import RushHourCNN
-from stable_baselines3.common.policies import ActorCriticCnnPolicy
-
-from utils.config import MODEL_PATH, LOG_FILE_PATH, NUM_VEHICLES
-
-
+from models.early_stopping import EarlyStoppingRewardCallback
+from utils.config import LOG_FILE_PATH, MODEL_PATH, NUM_VEHICLES
+from utils.custom_logger import RushHourCSVLogger
+import numpy as np
+from gymnasium.wrappers import TransformReward
 
 class RLModel:
     def __init__(self, model_class, env, model_path, log_file,
                  early_stopping=True, cnn=False):
         self.env = env
+        #self.env = TransformObservation(
+            #self.env,
+            #lambda obs: np.asarray(obs, dtype=np.float32, order="C"),
+            #observation_space=self.env.observation_space
+        #)
+        
         self.model_class = model_class
         self.model_name = model_class.__name__
         self.model_path = model_path
@@ -73,9 +77,9 @@ class RLModel:
                 verbose=1
             )
             callbacks.append(early_stop)
-            total_timesteps = 2_000_000 
+            total_timesteps =  200_000
         else:
-            total_timesteps = 2_000_000
+            total_timesteps =200_000
 
         self.model.learn(
             total_timesteps=total_timesteps,

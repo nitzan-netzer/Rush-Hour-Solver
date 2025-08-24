@@ -1,7 +1,8 @@
 import time
 from pathlib import Path
 from stable_baselines3 import DQN, A2C
-from sb3_contrib.ppo_mask import MaskablePPO as PPO
+#from sb3_contrib.ppo_mask import MaskablePPO as PPO
+from stable_baselines3 import PPO
 from sb3_contrib.common.wrappers import ActionMasker
 from models.RL_model import RLModel
 from environments.rush_hour_env import RushHourEnv
@@ -62,17 +63,18 @@ def main():
         # PPO CNN
         #(PPO, True, True),   # PPO-CNN + EarlyStopping
         #(PPO, True, False),  # PPO-CNN + No EarlyStopping
-        # PPO MLP
-        (PPO, False, True),  # PPO-MLP + EarlyStopping
-        (PPO, False, False),  # PPO-MLP + No EarlyStopping
         # DQN MLP
         #(DQN, False, True),  # DQN-MLP + EarlyStopping
-        #(DQN, False, False),  # DQN-MLP + No EarlyStopping
+        (DQN, False, False),  # DQN-MLP + No EarlyStopping
+        # PPO MLP
+        #(PPO, False, True),  # PPO-MLP + EarlyStopping
+        (PPO, False, False),  # PPO-MLP + No EarlyStopping
     ]
 
     for model_class, cnn, early_stopping in runs_to_train:
         run_id = f"run_{int(time.time())}"
-        model_name = f"{model_class.__name__}_{'CNN' if cnn else 'MLP'}_{'early' if early_stopping else 'full'}_{run_id}.zip"
+        #model_name = f"{model_class.__name__}_{'CNN' if cnn else 'MLP'}_{'early' if early_stopping else 'full'}_{run_id}.zip"
+        model_name = f"{model_class.__name__}_{'CNN' if cnn else 'MLP'}_{'early' if early_stopping else 'full'}"
         model_path = MODEL_DIR / model_name
         log_file = LOG_DIR / f"{model_name}.csv"
 
@@ -97,8 +99,8 @@ def main():
             cnn=cnn
         )
 
-        model.train()
-        model.save()
+        #model.train()
+        #model.save()
 
         # Create matching test env and evaluate
         test_env = RushHourImageEnv(NUM_VEHICLES, train=False, rewards=basic_reward, image_size=(128, 128)) \

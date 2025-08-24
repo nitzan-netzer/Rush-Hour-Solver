@@ -18,9 +18,8 @@ class EarlyStoppingRewardCallback(BaseCallback):
 
             if len(self.reward_history) == self.window_size:
                 avg_reward = sum(self.reward_history) / self.window_size
-                if self.verbose:
-                    print(
-                        f"💰 Average reward (last {self.window_size} episodes): {avg_reward:.2f}")
+                #if self.verbose:
+                    #print(f"💰 Average reward (last {self.window_size} episodes): {avg_reward:.2f}")
                 if avg_reward >= self.reward_threshold:
                     print("🛑 Early stopping: reward threshold reached!")
                     return False  # Stop training

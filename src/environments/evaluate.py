@@ -10,8 +10,9 @@ def evaluate_model(model,env, episodes=None):
         done = False
         truncated = False
         while not done and not truncated:
-            action_mask = info.get("action_mask")
-            action, _ = model.predict(obs, action_masks=action_mask)
+            #action_mask = info.get("action_mask")
+            #action, _ = model.predict(obs, action_masks=action_mask)
+            action, _ = model.predict(obs)
             obs, reward, done,truncated, info = env.step(action)
             episode_reward += reward
             if done:
