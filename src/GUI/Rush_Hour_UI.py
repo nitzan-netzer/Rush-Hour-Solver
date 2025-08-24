@@ -72,7 +72,6 @@ def solve_board(screen, model, board):
 
 # Draw current board
 
-
 def draw_board(screen, board_obj,step_counter=0):
     screen_center_x = screen.get_width() // 2
     screen_bottom_y = screen.get_height() - 40
